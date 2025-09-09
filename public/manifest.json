@@ -1,0 +1,9 @@
+{
+  "short_name": "Trang quản trị - Admin",
+  "name": "Trang quản trị - Admin",
+  "icons": [],
+  "start_url": ".",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}

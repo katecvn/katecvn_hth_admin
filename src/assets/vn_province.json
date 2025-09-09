@@ -1,0 +1,506 @@
+[
+  {
+    "id": 1,
+    "code": "01",
+    "name": "Thành phố Hà Nội",
+    "level": "Thành phố Trung ương",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 2,
+    "code": "02",
+    "name": "Tỉnh Hà Giang",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 3,
+    "code": "04",
+    "name": "Tỉnh Cao Bằng",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 4,
+    "code": "06",
+    "name": "Tỉnh Bắc Kạn",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 5,
+    "code": "08",
+    "name": "Tỉnh Tuyên Quang",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 6,
+    "code": "10",
+    "name": "Tỉnh Lào Cai",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 7,
+    "code": "11",
+    "name": "Tỉnh Điện Biên",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 8,
+    "code": "12",
+    "name": "Tỉnh Lai Châu",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 9,
+    "code": "14",
+    "name": "Tỉnh Sơn La",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 10,
+    "code": "15",
+    "name": "Tỉnh Yên Bái",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 11,
+    "code": "17",
+    "name": "Tỉnh Hoà Bình",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 12,
+    "code": "19",
+    "name": "Tỉnh Thái Nguyên",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 13,
+    "code": "20",
+    "name": "Tỉnh Lạng Sơn",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 14,
+    "code": "22",
+    "name": "Tỉnh Quảng Ninh",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 15,
+    "code": "24",
+    "name": "Tỉnh Bắc Giang",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 16,
+    "code": "25",
+    "name": "Tỉnh Phú Thọ",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 17,
+    "code": "26",
+    "name": "Tỉnh Vĩnh Phúc",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 18,
+    "code": "27",
+    "name": "Tỉnh Bắc Ninh",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 19,
+    "code": "30",
+    "name": "Tỉnh Hải Dương",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 20,
+    "code": "31",
+    "name": "Thành phố Hải Phòng",
+    "level": "Thành phố Trung ương",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 21,
+    "code": "33",
+    "name": "Tỉnh Hưng Yên",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 22,
+    "code": "34",
+    "name": "Tỉnh Thái Bình",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 23,
+    "code": "35",
+    "name": "Tỉnh Hà Nam",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 24,
+    "code": "36",
+    "name": "Tỉnh Nam Định",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 25,
+    "code": "37",
+    "name": "Tỉnh Ninh Bình",
+    "level": "Tỉnh",
+    "region": 1,
+    "region_name": "Miền Bắc"
+  },
+  {
+    "id": 26,
+    "code": "38",
+    "name": "Tỉnh Thanh Hóa",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 27,
+    "code": "40",
+    "name": "Tỉnh Nghệ An",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 28,
+    "code": "42",
+    "name": "Tỉnh Hà Tĩnh",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 29,
+    "code": "44",
+    "name": "Tỉnh Quảng Bình",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 30,
+    "code": "45",
+    "name": "Tỉnh Quảng Trị",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 31,
+    "code": "46",
+    "name": "Tỉnh Thừa Thiên Huế",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 32,
+    "code": "48",
+    "name": "Thành phố Đà Nẵng",
+    "level": "Thành phố Trung ương",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 33,
+    "code": "49",
+    "name": "Tỉnh Quảng Nam",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 34,
+    "code": "51",
+    "name": "Tỉnh Quảng Ngãi",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 35,
+    "code": "52",
+    "name": "Tỉnh Bình Định",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 36,
+    "code": "54",
+    "name": "Tỉnh Phú Yên",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 37,
+    "code": "56",
+    "name": "Tỉnh Khánh Hòa",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 38,
+    "code": "58",
+    "name": "Tỉnh Ninh Thuận",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 39,
+    "code": "60",
+    "name": "Tỉnh Bình Thuận",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 40,
+    "code": "62",
+    "name": "Tỉnh Kon Tum",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 41,
+    "code": "64",
+    "name": "Tỉnh Gia Lai",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 42,
+    "code": "66",
+    "name": "Tỉnh Đắk Lắk",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 43,
+    "code": "67",
+    "name": "Tỉnh Đắk Nông",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 44,
+    "code": "68",
+    "name": "Tỉnh Lâm Đồng",
+    "level": "Tỉnh",
+    "region": 2,
+    "region_name": "Miền Trung"
+  },
+  {
+    "id": 45,
+    "code": "70",
+    "name": "Tỉnh Bình Phước",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 46,
+    "code": "72",
+    "name": "Tỉnh Tây Ninh",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 47,
+    "code": "74",
+    "name": "Tỉnh Bình Dương",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 48,
+    "code": "75",
+    "name": "Tỉnh Đồng Nai",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 49,
+    "code": "77",
+    "name": "Tỉnh Bà Rịa - Vũng Tàu",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 50,
+    "code": "79",
+    "name": "Thành phố Hồ Chí Minh",
+    "level": "Thành phố Trung ương",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 51,
+    "code": "80",
+    "name": "Tỉnh Long An",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 52,
+    "code": "82",
+    "name": "Tỉnh Tiền Giang",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 53,
+    "code": "83",
+    "name": "Tỉnh Bến Tre",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 54,
+    "code": "84",
+    "name": "Tỉnh Trà Vinh",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 55,
+    "code": "86",
+    "name": "Tỉnh Vĩnh Long",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 56,
+    "code": "87",
+    "name": "Tỉnh Đồng Tháp",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 57,
+    "code": "89",
+    "name": "Tỉnh An Giang",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 58,
+    "code": "91",
+    "name": "Tỉnh Kiên Giang",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 59,
+    "code": "92",
+    "name": "Thành phố Cần Thơ",
+    "level": "Thành phố Trung ương",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 60,
+    "code": "93",
+    "name": "Tỉnh Hậu Giang",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 61,
+    "code": "94",
+    "name": "Tỉnh Sóc Trăng",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 62,
+    "code": "95",
+    "name": "Tỉnh Bạc Liêu",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  },
+  {
+    "id": 63,
+    "code": "96",
+    "name": "Tỉnh Cà Mau",
+    "level": "Tỉnh",
+    "region": 3,
+    "region_name": "Miền Nam"
+  }
+]
