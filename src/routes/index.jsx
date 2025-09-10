@@ -15,6 +15,7 @@ import RolePage from '@/views/admin/role/RolePage'
 import CommentPage from '@/views/admin/comment/CommentPage'
 import TopicPage from '@/views/admin/topic/TopicPage'
 import UserPage from '@/views/admin/user/UserPage'
+import CustomerGroupPage from '@/views/admin/customer_groups/CustomerGroupPage'
 import CallbackGoogle from '@/views/auth/components/CallbackGoogle'
 import ForgotPasswordPage from '@/views/auth/ForgotPasswordPage'
 import LoginPage from '@/views/auth/LoginPage'
@@ -29,7 +30,6 @@ import SpecificationGroupPage from '@/views/admin/specification_group/Specificat
 import SpecificationPage from '@/views/admin/specification/SpecificationPage'
 import ProductAttributePage from '@/views/admin/product_attribute/ProductAttributePage'
 import VariantPage from '@/views/admin/variant/VariantPage'
-// import TestPage from '@/views/admin/invoice/TestPage'
 
 const routes = [
   {
@@ -63,11 +63,19 @@ const routes = [
     element: CommentPage,
     layout: AdminLayout,
   },
+
   {
     path: '/user',
     element: UserPage,
     layout: AdminLayout,
   },
+
+  {
+    path: '/customer-group',
+    element: CustomerGroupPage,
+    layout: AdminLayout,
+  },
+
   {
     path: '/role',
     element: RolePage,
@@ -169,11 +177,6 @@ const routes = [
     element: LoginPage,
     layout: AuthLayout,
   },
-  // {
-  //   path: '/login-new',
-  //   element: TestPage,
-  //   layout: AuthLayout,
-  // },
   {
     path: '*',
     element: ErrorPage,

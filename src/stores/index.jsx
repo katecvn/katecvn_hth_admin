@@ -18,6 +18,7 @@ import contactSliceReducer from './ContactSlice'
 import productSliceReducer from './ProductSlice'
 import optionSliceReducer from './OptionSlice'
 import groupSliceReducer from './GroupSlice'
+import customerGroupSliceReducer from './CustomerGroupSlice'
 import commentSliceReducer from '@/views/admin/comment/CommentSlice'
 import discountSliceReducer from './DiscountSlice'
 import invoiceSliceReducer from './InvoiceSlice'
@@ -57,6 +58,7 @@ export const store = configureStore({
     specification: specificationSliceReducer,
     productAttribute: productAttributeSliceReducer,
     productVariant: productVariantSliceReducer,
+    customerGroup: customerGroupSliceReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),

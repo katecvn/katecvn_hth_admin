@@ -41,7 +41,6 @@ export const sideLinks = [
     title: 'Đơn hàng',
     href: '/invoice',
     icon: <IconShoppingCartDollar size={18} />,
-    // permission: 'order_view',
     sub: [
       {
         title: 'Đơn hàng',
@@ -57,7 +56,6 @@ export const sideLinks = [
         title: 'Giảm giá',
         href: '/discount',
         icon: <IconDiscount size={18} />,
-        // permission: 'role_view',
       },
     ],
   },
@@ -82,13 +80,11 @@ export const sideLinks = [
         title: 'Nhóm sản phẩm',
         href: '/groups',
         icon: <IconStackBack size={18} />,
-        // permission: 'role_view',
       },
       {
         title: 'Tùy chọn sản phẩm',
         href: '/options',
         icon: <IconAB2 size={18} />,
-        // permission: 'role_view',
       },
       {
         title: 'Nhóm thông số kỹ thuật',
@@ -109,14 +105,11 @@ export const sideLinks = [
         title: 'Danh mục sản phẩm',
         href: '/category',
         icon: <IconCategory size={18} />,
-        // permission: true,
       },
-
       {
         title: 'Thương hiệu',
         href: '/brand',
         icon: <IconBuildingFactory2 size={18} />,
-        // permission: 'GET_UNIT',
       },
     ],
   },
@@ -150,12 +143,27 @@ export const sideLinks = [
     icon: <IconUser size={18} />,
     permission: 'user_view',
   },
+
   {
     title: 'Khách hàng',
-    href: '/user?role=customer',
     icon: <IconUsersGroup size={18} />,
     permission: 'user_view',
+    sub: [
+      {
+        title: 'Danh sách khách hàng',
+        href: '/user?role=customer',
+        icon: <IconUsers size={18} />,
+        permission: 'user_view',
+      },
+      {
+        title: 'Nhóm khách hàng',
+        href: '/customer-group',
+        icon: <IconUsersGroup size={18} />,
+        permission: 'user_view',
+      },
+    ],
   },
+
   {
     title: 'Hình ảnh',
     href: '/media',
@@ -173,25 +181,21 @@ export const sideLinks = [
     title: 'Cài đặt',
     href: '/settings',
     icon: <IconSettings size={18} />,
-    // permission: 'SESSION_SETTING',
     sub: [
       {
         title: 'Menu',
         href: '/navigation',
         icon: <IconAdjustments size={18} />,
-        // permission: 'GET_UNIT',
       },
       {
         title: 'Trang',
         href: '/page',
         icon: <IconSitemap size={18} />,
-        // permission: 'GET_UNIT',
       },
       {
         title: 'Cài đặt trang',
         href: '/pagesection',
         icon: <IconSettingsPause size={18} />,
-        // permission: 'GET_UNIT',
       },
       {
         title: 'Vai trò',
