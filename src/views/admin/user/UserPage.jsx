@@ -11,12 +11,14 @@ import { deleteUser, getUsers } from '@/stores/UserSlice'
 import UserDialog from './components/UserDialog'
 import { useSearchParams } from 'react-router-dom'
 import { dateFormat } from '@/utils/date-format'
+
 const UserPage = () => {
   const dispatch = useDispatch()
   const [searchParams] = useSearchParams()
   const role = searchParams.get('role')
   const users = useSelector((state) => state.user.users)
   const loading = useSelector((state) => state.user.loading)
+
   const [showCreateUserDialog, setShowCreateUserDialog] = useState(false)
   const [showDeleteUserDialog, setShowDeleteUserDialog] = useState(false)
   const [showUpdateUserDialog, setShowUpdateUserDialog] = useState(false)
@@ -29,6 +31,7 @@ const UserPage = () => {
       console.error('Error deleting User:', error)
     }
   }
+
   const handleShowDetails = async (id) => {
     try {
       setShowUpdateUserDialog(true)
@@ -36,10 +39,12 @@ const UserPage = () => {
       console.error('Error fetching User details:', error)
     }
   }
+
   useEffect(() => {
     document.title = 'Quản lý người dùng'
     dispatch(getUsers({ type: role }))
   }, [dispatch, role])
+
   const columns = [
     {
       accessorKey: 'id',
@@ -48,29 +53,44 @@ const UserPage = () => {
     },
     {
       accessorKey: 'full_name',
-      header: 'Tên người dùng',
+      header: role === 'admin' ? 'Tên người dùng' : 'Tên khách hàng',
     },
-    role === 'admin'
-      ? {
-          accessorKey: 'roles',
-          header: 'Vai trò',
-          cell: ({ row }) => {
-            const roles = row.getValue('roles')
-            return <div>{roles[0]?.description || 'Không xác định'}</div>
+    ...(role === 'admin'
+      ? [
+          {
+            accessorKey: 'roles',
+            header: 'Vai trò',
+            cell: ({ row }) => {
+              const roles = row.getValue('roles')
+              return <div>{roles[0]?.description || 'Không xác định'}</div>
+            },
           },
-        }
-      : {
-          accessorKey: 'phone_number',
-          header: 'Số điện thoại',
-          cell: ({ row }) => {
-            const phoneNumber = row.getValue('phone_number')
-            return (
-              <div className={`${phoneNumber ? '' : 'text-muted-foreground'}`}>
-                {phoneNumber || 'Không xác định'}
+        ]
+      : [
+          {
+            accessorKey: 'customerGroup',
+            header: 'Phân loại khách hàng',
+            cell: ({ row }) => (
+              <div>
+                {row.original?.customerGroup?.name || 'Chưa có phân loại'}
               </div>
-            )
+            ),
           },
-        },
+          {
+            accessorKey: 'phone_number',
+            header: 'Số điện thoại',
+            cell: ({ row }) => {
+              const phoneNumber = row.getValue('phone_number')
+              return (
+                <div
+                  className={`${phoneNumber ? '' : 'text-muted-foreground'}`}
+                >
+                  {phoneNumber || 'Không xác định'}
+                </div>
+              )
+            },
+          },
+        ]),
     {
       id: 'createdAt',
       header: 'Ngày tạo',
@@ -120,6 +140,7 @@ const UserPage = () => {
       ),
     },
   ]
+
   const toolbar = [
     {
       children: (
@@ -148,6 +169,7 @@ const UserPage = () => {
       ),
     },
   ]
+
   return (
     <Layout>
       <LayoutBody className="flex flex-col" fixedHeight>
@@ -190,7 +212,7 @@ const UserPage = () => {
           onOpenChange={setShowUpdateUserDialog}
           userData={{
             ...itemChoice.original,
-            role_id: itemChoice.original?.roles[0]?.id,
+            role_id: itemChoice.original?.roles?.[0]?.id,
           }}
           showTrigger={false}
           isUpdate={true}

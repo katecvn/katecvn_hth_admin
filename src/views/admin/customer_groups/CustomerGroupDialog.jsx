@@ -31,6 +31,14 @@ import {
   updateCustomerGroup,
 } from '@/stores/CustomerGroupSlice'
 import { ConfirmDialog } from '@/components/ComfirmDialog'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 const CustomerGroupDialog = ({
   open,
@@ -51,15 +59,16 @@ const CustomerGroupDialog = ({
     defaultValues: {
       name: initialData?.name || '',
       description: initialData?.description || '',
+      type: initialData?.type || 'organization',
     },
   })
 
-  // đồng bộ lại giá trị khi mở dialog edit
   useEffect(() => {
     if (initialData) {
       form.reset({
         name: initialData?.name || '',
         description: initialData?.description || '',
+        type: initialData?.type || 'organization',
       })
     }
   }, [initialData, form])
@@ -111,13 +120,13 @@ const CustomerGroupDialog = ({
         <DialogHeader>
           <DialogTitle>
             {isEditing
-              ? 'Cập nhật nhóm khách hàng'
-              : 'Thêm nhóm khách hàng mới'}
+              ? 'Cập nhật phân loại khách hàng'
+              : 'Thêm phân loại khách hàng mới'}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? 'Chỉnh sửa thông tin nhóm khách hàng bên dưới'
-              : 'Điền vào chi tiết phía dưới để thêm nhóm khách hàng mới'}
+              ? 'Chỉnh sửa thông tin phân loại khách hàng bên dưới'
+              : 'Điền vào chi tiết phía dưới để thêm phân loại khách hàng mới'}
           </DialogDescription>
         </DialogHeader>
 
@@ -142,10 +151,12 @@ const CustomerGroupDialog = ({
                   name="name"
                   render={({ field }) => (
                     <FormItem className="mb-2 space-y-1">
-                      <FormLabel required={true}>Tên nhóm khách hàng</FormLabel>
+                      <FormLabel required={true}>
+                        Tên phân loại khách hàng
+                      </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Nhập tên nhóm khách hàng"
+                          placeholder="Nhập tên phân loại khách hàng"
                           {...field}
                         />
                       </FormControl>
@@ -163,6 +174,35 @@ const CustomerGroupDialog = ({
                       <FormControl>
                         <Input placeholder="Nhập mô tả" {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem className="mb-2 space-y-1">
+                      <FormLabel>Loại</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn loại nhóm" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="individual">Cá nhân</SelectItem>
+                            <SelectItem value="organization">
+                              Tổ chức
+                            </SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -192,7 +232,7 @@ const CustomerGroupDialog = ({
         <ConfirmDialog
           open={confirmOpen}
           onOpenChange={setConfirmOpen}
-          description="Hành động này sẽ thay đổi thông tin nhóm khách hàng."
+          description="Hành động này sẽ thay đổi thông tin phân loại khách hàng."
           onConfirm={() => onSubmit(form.getValues())}
           loading={loading}
         />

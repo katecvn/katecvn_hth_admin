@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/custom/PasswordInput'
@@ -35,15 +35,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { createUser, updateUser } from '@/stores/UserSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { getRoles } from '@/stores/RoleSlice'
+import { getCustomerGroup } from '@/stores/CustomerGroupSlice'
 import { createUserSchema, updateUserSchema } from '../schema'
 import { statuses, genders } from './../data/index'
 import MediaModal from '../../media/MediaModal'
-import {
-  CalendarIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ImageIcon,
-} from 'lucide-react'
+import { CalendarIcon, ImageIcon } from 'lucide-react'
 import { DatePicker } from '@/components/custom/DatePicker'
 import {
   Popover,
@@ -57,8 +53,7 @@ const formatDateForInput = (isoDateString) => {
   try {
     const date = new Date(isoDateString)
     return date.toISOString().split('T')[0]
-  } catch (error) {
-    console.error('Lỗi chuyển đổi định dạng ngày:', error)
+  } catch {
     return ''
   }
 }
@@ -74,6 +69,9 @@ const UserDialog = ({
 }) => {
   const loading = useSelector((state) => state.user.loading)
   const roles = useSelector((state) => state.role.roles)
+  const customerGroups = useSelector(
+    (state) => state.customerGroup.customerGroups || [],
+  )
   const [mediaModalOpen, setMediaModalOpen] = useState(false)
 
   const form = useForm({
@@ -86,6 +84,7 @@ const UserDialog = ({
       rePassword: isUpdate ? undefined : '',
       phone_number: '',
       role_id: '',
+      customerGroupId: '',
       address: '',
       email: '',
       date_of_birth: '',
@@ -94,15 +93,26 @@ const UserDialog = ({
       status: '',
     },
   })
+
   const thumbnailValue = form.watch('avatar_url')
+  const selectedCustomerGroupId = form.watch('customerGroupId')
+
+  const selectedCustomerGroup = useMemo(() => {
+    return customerGroups.find(
+      (g) => String(g.id) === String(selectedCustomerGroupId),
+    )
+  }, [customerGroups, selectedCustomerGroupId])
+
   const handleImageSelect = (imageUrl) => {
     form.setValue('avatar_url', imageUrl)
     setMediaModalOpen(false)
   }
+
   const dispatch = useDispatch()
 
   useEffect(() => {
     dispatch(getRoles())
+    dispatch(getCustomerGroup())
   }, [dispatch])
 
   useEffect(() => {
@@ -115,6 +125,7 @@ const UserDialog = ({
         rePassword: '',
         phone_number: userData.phone_number || '',
         role_id: userData.role_id?.toString() || '',
+        customerGroupId: userData.customerGroupId?.toString() || '',
         address: userData.address || '',
         email: userData.email || '',
         date_of_birth: formatDateForInput(userData.date_of_birth) || '',
@@ -131,6 +142,7 @@ const UserDialog = ({
         rePassword: '',
         phone_number: '',
         role_id: '',
+        customerGroupId: '',
         address: '',
         email: '',
         date_of_birth: '',
@@ -156,15 +168,16 @@ const UserDialog = ({
       form.reset()
       onOpenChange?.(false)
     } catch (error) {
-      console.log('Submit error: ', error)
       const errorMessage =
         error.response?.data?.messages ||
         error.message ||
         'Có lỗi xảy ra. Vui lòng thử lại.'
-
       if (typeof errorMessage === 'object') {
         Object.keys(errorMessage).forEach((field) => {
-          form.setError(field, { type: 'server', message: errorMessage[field] })
+          form.setError(field, {
+            type: 'server',
+            message: errorMessage[field],
+          })
         })
       }
     }
@@ -201,28 +214,76 @@ const UserDialog = ({
                   name="full_name"
                   render={({ field }) => (
                     <FormItem className="mb-2 space-y-1">
-                      <FormLabel required={true}>Họ và tên</FormLabel>
+                      <FormLabel required={true}>
+                        {isModal === 'admin' ? 'Họ và tên' : 'Tên khách hàng'}
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="Nhập họ và tên" {...field} />
+                        <Input
+                          placeholder={
+                            isModal === 'admin'
+                              ? 'Nhập họ và tên'
+                              : 'Nhập tên khách hàng'
+                          }
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="code"
-                  render={({ field }) => (
-                    <FormItem className="mb-2 space-y-1">
-                      <FormLabel>Mã nhân viên</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nhập mã nhân viên" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {isModal === 'admin' ? (
+                  <FormField
+                    control={form.control}
+                    name="code"
+                    render={({ field }) => (
+                      <FormItem className="mb-2 space-y-1">
+                        <FormLabel>Mã nhân viên</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nhập mã nhân viên" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ) : (
+                  <FormField
+                    control={form.control}
+                    name="customerGroupId"
+                    render={({ field }) => (
+                      <FormItem className="mb-2 space-y-1">
+                        <FormLabel>Phân loại khách hàng</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Chọn nhóm khách hàng" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {customerGroups.length > 0 ? (
+                              customerGroups.map((group) => (
+                                <SelectItem
+                                  key={group.id}
+                                  value={String(group.id)}
+                                >
+                                  {group.name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <div className="px-2 py-1 text-sm text-gray-500">
+                                Không có dữ liệu
+                              </div>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <FormField
                   control={form.control}
@@ -237,21 +298,18 @@ const UserDialog = ({
                     </FormItem>
                   )}
                 />
+
                 {!isUpdate && (
                   <FormField
                     control={form.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem className="mb-2 space-y-1">
-                        <FormLabel required={!isUpdate}>
-                          Mật khẩu {isUpdate && '(để trống nếu không thay đổi)'}
-                        </FormLabel>
+                        <FormLabel required={!isUpdate}>Mật khẩu</FormLabel>
                         <FormControl>
                           <PasswordInput
                             autoComplete="new-password"
-                            placeholder={
-                              isUpdate ? 'Nhập mật khẩu mới' : 'Nhập mật khẩu'
-                            }
+                            placeholder="Nhập mật khẩu"
                             {...field}
                           />
                         </FormControl>
@@ -281,103 +339,109 @@ const UserDialog = ({
                   />
                 )}
 
-                <FormField
-                  control={form.control}
-                  name="date_of_birth"
-                  render={({ field }) => {
-                    const displayValue = formatDateVN(field.value)
-                    return (
-                      <FormItem className="mb-2 space-y-1">
-                        <FormLabel>Ngày sinh</FormLabel>
-                        <FormControl>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <div className="relative w-full">
-                                <Input
-                                  readOnly
-                                  value={displayValue}
-                                  placeholder="Chọn ngày sinh"
-                                  className={
-                                    'cursor-pointer pr-10 text-left ' +
-                                    (!displayValue
-                                      ? 'text-muted-foreground'
-                                      : '')
-                                  }
-                                  // Auto focus popover khi click input
-                                />
-                                <CalendarIcon
-                                  className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
-                                  size={18}
-                                />
-                              </div>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              align="start"
-                              className="w-auto p-0"
-                            >
-                              <DatePicker
-                                mode="single"
-                                captionLayout="dropdown-buttons"
-                                selected={parseDateLocal(field.value)}
-                                onSelect={(date) => {
-                                  if (date) {
-                                    const year = date.getFullYear()
-                                    const month = (date.getMonth() + 1)
-                                      .toString()
-                                      .padStart(2, '0')
-                                    const day = date
-                                      .getDate()
-                                      .toString()
-                                      .padStart(2, '0')
-                                    field.onChange(`${year}-${month}-${day}`)
-                                  } else {
-                                    field.onChange('')
-                                  }
-                                }}
-                                fromYear={1950}
-                                toYear={new Date().getFullYear()}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )
-                  }}
-                />
+                {(!selectedCustomerGroup ||
+                  selectedCustomerGroup?.type === 'individual') && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="date_of_birth"
+                      render={({ field }) => {
+                        const displayValue = formatDateVN(field.value)
+                        return (
+                          <FormItem className="mb-2 space-y-1">
+                            <FormLabel>Ngày sinh</FormLabel>
+                            <FormControl>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <div className="relative w-full">
+                                    <Input
+                                      readOnly
+                                      value={displayValue}
+                                      placeholder="Chọn ngày sinh"
+                                      className={
+                                        'cursor-pointer pr-10 text-left ' +
+                                        (!displayValue
+                                          ? 'text-muted-foreground'
+                                          : '')
+                                      }
+                                    />
+                                    <CalendarIcon
+                                      className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                      size={18}
+                                    />
+                                  </div>
+                                </PopoverTrigger>
+                                <PopoverContent
+                                  align="start"
+                                  className="w-auto p-0"
+                                >
+                                  <DatePicker
+                                    mode="single"
+                                    captionLayout="dropdown-buttons"
+                                    selected={parseDateLocal(field.value)}
+                                    onSelect={(date) => {
+                                      if (date) {
+                                        const year = date.getFullYear()
+                                        const month = (date.getMonth() + 1)
+                                          .toString()
+                                          .padStart(2, '0')
+                                        const day = date
+                                          .getDate()
+                                          .toString()
+                                          .padStart(2, '0')
+                                        field.onChange(
+                                          `${year}-${month}-${day}`,
+                                        )
+                                      } else {
+                                        field.onChange('')
+                                      }
+                                    }}
+                                    fromYear={1950}
+                                    toYear={new Date().getFullYear()}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )
+                      }}
+                    />
 
-                <FormField
-                  control={form.control}
-                  name="gender"
-                  render={({ field }) => (
-                    <FormItem className="mb-2 space-y-1">
-                      <FormLabel>Giới tính</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Chọn giới tính" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectGroup>
-                            {genders?.map((gender) => (
-                              <SelectItem
-                                key={gender.value}
-                                value={gender.value}
-                              >
-                                {gender.label}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <FormField
+                      control={form.control}
+                      name="gender"
+                      render={({ field }) => (
+                        <FormItem className="mb-2 space-y-1">
+                          <FormLabel>Giới tính</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Chọn giới tính" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectGroup>
+                                {genders?.map((gender) => (
+                                  <SelectItem
+                                    key={gender.value}
+                                    value={gender.value}
+                                  >
+                                    {gender.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
 
                 <FormField
                   control={form.control}
@@ -466,6 +530,7 @@ const UserDialog = ({
                     </FormItem>
                   )}
                 />
+
                 {isModal === 'admin' && (
                   <FormField
                     control={form.control}
@@ -533,44 +598,6 @@ const UserDialog = ({
                     </FormItem>
                   )}
                 />
-
-                {userData?.user_type === 'customer' && (
-                  <div className="col-span-2">
-                    <FormLabel className="mb-2 block font-semibold">
-                      Địa chỉ đặt hàng
-                    </FormLabel>
-                    <div className="space-y-2">
-                      {(userData?.userAddresses || []).length === 0 && (
-                        <div className="text-sm text-gray-500">
-                          Khách hàng chưa có địa chỉ nào
-                        </div>
-                      )}
-                      {(userData?.userAddresses || []).map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex flex-col gap-2 rounded border p-2 md:flex-row md:items-center"
-                        >
-                          <div>
-                            <b>{item.name}</b>{' '}
-                            <span className="text-sm text-blue-500 hover:underline">
-                              <a href={`tel:${item.phone}`}>({item.phone})</a>
-                            </span>
-                            <div className="text-sm text-gray-700">
-                              {item.address}
-                            </div>
-                          </div>
-                          {item.isDefault && (
-                            <span className="ml-2 rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700">
-                              Mặc định
-                            </span>
-                          )}
-                          {/* Có thể thêm nút Sửa/Xóa tại đây nếu muốn */}
-                        </div>
-                      ))}
-                      {/* Có thể thêm nút Thêm địa chỉ mới */}
-                    </div>
-                  </div>
-                )}
               </div>
             </form>
           </Form>

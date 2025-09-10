@@ -17,6 +17,7 @@ const baseUserSchema = {
   username: z.string().min(1, { message: 'Không được để trống' }),
   // role_id: z.string().min(1, { message: 'Không được để trống' }),
   role_id: z.string().optional(),
+  customerGroupId: z.string().optional(),
   phone_number: z
     .string()
     .nullable()
@@ -50,17 +51,6 @@ const createUserSchema = z
 const updateUserSchema = z.object({
   ...baseUserSchema,
 })
-// .refine(
-//   (data) => {
-//     // Only validate passwords match if a new password is provided
-//     if (!data.password && !data.rePassword) return true
-//     return data.password === data.rePassword
-//   },
-//   {
-//     message: 'Mật khẩu xác nhận không khớp',
-//     path: ['rePassword'],
-//   },
-// )
 
 const userFormSchema = z.union([createUserSchema, updateUserSchema])
 

@@ -156,7 +156,7 @@ export const sideLinks = [
         permission: 'user_view',
       },
       {
-        title: 'Nhóm khách hàng',
+        title: 'Phân loại khách hàng',
         href: '/customer-group',
         icon: <IconUsersGroup size={18} />,
         permission: 'user_view',

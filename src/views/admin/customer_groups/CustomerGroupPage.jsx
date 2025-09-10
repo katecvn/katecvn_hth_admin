@@ -35,7 +35,7 @@ const CustomerGroupPage = () => {
   }
 
   useEffect(() => {
-    document.title = 'Quản lý nhóm khách hàng'
+    document.title = 'Quản lý phân loại khách hàng'
     dispatch(getCustomerGroup())
   }, [dispatch])
 
@@ -47,7 +47,7 @@ const CustomerGroupPage = () => {
     },
     {
       accessorKey: 'name',
-      header: 'Tên nhóm khách hàng',
+      header: 'Tên phân loại khách hàng',
     },
     {
       accessorKey: 'createdAt',
@@ -126,7 +126,7 @@ const CustomerGroupPage = () => {
         <div className="mb-2 flex items-center justify-between space-y-2">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">
-              Danh sách nhóm khách hàng
+              Danh sách phân loại khách hàng
             </h2>
           </div>
         </div>
@@ -136,7 +136,7 @@ const CustomerGroupPage = () => {
               columns={columns}
               data={groups}
               toolbar={toolbar}
-              caption="Danh sách nhóm khách hàng"
+              caption="Danh sách phân loại khách hàng"
               searchKey="name"
               searchPlaceholder="Tìm theo tên..."
               showGlobalFilter={true}
@@ -151,7 +151,7 @@ const CustomerGroupPage = () => {
         <ConfirmDialog
           open={showDeleteDialog}
           onOpenChange={setShowDeleteDialog}
-          description={`Hành động này không thể hoàn tác. Nhóm khách hàng: ${itemChoice.original?.name} sẽ bị xóa.`}
+          description={`Hành động này không thể hoàn tác. Phân loại khách hàng: ${itemChoice.original?.name} sẽ bị xóa.`}
           onConfirm={() => handleDelete(itemChoice.original?.id)}
           loading={loading}
         />

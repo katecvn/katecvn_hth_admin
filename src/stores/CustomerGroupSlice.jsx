@@ -23,7 +23,7 @@ export const deleteCustomerGroup = createAsyncThunk(
     try {
       await api.delete(`/customer-group/destroy/${id}`)
       await dispatch(getCustomerGroup()).unwrap()
-      toast.success('Xóa nhóm khách hàng thành công')
+      toast.success('Xóa phân loại khách hàng thành công')
     } catch (error) {
       const message = handleError(error)
       return rejectWithValue(message)
@@ -37,7 +37,7 @@ export const createCustomerGroup = createAsyncThunk(
     try {
       await api.post('/customer-group/create', data)
       await dispatch(getCustomerGroup()).unwrap()
-      toast.success('Thêm nhóm khách hàng thành công')
+      toast.success('Thêm phân loại khách hàng thành công')
     } catch (error) {
       const message = handleError(error)
       return rejectWithValue(message)
@@ -52,7 +52,7 @@ export const updateCustomerGroup = createAsyncThunk(
       const { id, data } = updateData
       await api.put(`/customer-group/update/${id}`, data)
       await dispatch(getCustomerGroup()).unwrap()
-      toast.success('Cập nhật nhóm khách hàng thành công')
+      toast.success('Cập nhật phân loại khách hàng thành công')
     } catch (error) {
       const message = handleError(error)
       return rejectWithValue(message)
