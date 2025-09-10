@@ -145,24 +145,22 @@ const UserPage = () => {
     {
       children: (
         <Can permission={'user_create'}>
-          {role === 'admin' && (
-            <Button
-              onClick={() => setShowCreateUserDialog(true)}
-              className="mx-2"
-              variant="outline"
-              size="sm"
-            >
-              <PlusIcon className="mr-2 size-4" aria-hidden="true" />
-              Thêm mới
-            </Button>
-          )}
+          <Button
+            onClick={() => setShowCreateUserDialog(true)}
+            className="mx-2"
+            variant="outline"
+            size="sm"
+          >
+            <PlusIcon className="mr-2 size-4" aria-hidden="true" />
+            {role === 'admin' ? 'Thêm nhân viên' : 'Thêm khách hàng'}
+          </Button>
 
           {showCreateUserDialog && (
             <UserDialog
               open={showCreateUserDialog}
               onOpenChange={setShowCreateUserDialog}
               initialData={null}
-              isModal={role}
+              isModal={role} // admin hoặc customer
             />
           )}
         </Can>

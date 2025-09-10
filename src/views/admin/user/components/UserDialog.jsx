@@ -18,7 +18,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-
 import {
   Select,
   SelectContent,
@@ -96,7 +95,6 @@ const UserDialog = ({
 
   const thumbnailValue = form.watch('avatar_url')
   const selectedCustomerGroupId = form.watch('customerGroupId')
-
   const selectedCustomerGroup = useMemo(() => {
     return customerGroups.find(
       (g) => String(g.id) === String(selectedCustomerGroupId),
@@ -155,16 +153,22 @@ const UserDialog = ({
 
   const onSubmit = async (data) => {
     try {
+      const payload = {
+        ...data,
+        user_type: isModal === 'admin' ? 'admin' : 'customer',
+      }
+
       if (isUpdate && userData) {
         await dispatch(
           updateUser({
             id: userData.id,
-            data: data,
+            data: payload,
           }),
         ).unwrap()
       } else {
-        await dispatch(createUser(data)).unwrap()
+        await dispatch(createUser(payload)).unwrap()
       }
+
       form.reset()
       onOpenChange?.(false)
     } catch (error) {
@@ -209,6 +213,7 @@ const UserDialog = ({
           <Form {...form}>
             <form id="user-form" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid gap-4 md:grid-cols-2">
+                {/* full_name */}
                 <FormField
                   control={form.control}
                   name="full_name"
@@ -232,6 +237,7 @@ const UserDialog = ({
                   )}
                 />
 
+                {/* code hoặc customerGroupId */}
                 {isModal === 'admin' ? (
                   <FormField
                     control={form.control}
@@ -285,6 +291,7 @@ const UserDialog = ({
                   />
                 )}
 
+                {/* username */}
                 <FormField
                   control={form.control}
                   name="username"
@@ -299,46 +306,47 @@ const UserDialog = ({
                   )}
                 />
 
+                {/* password + rePassword (chỉ khi tạo mới) */}
                 {!isUpdate && (
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem className="mb-2 space-y-1">
-                        <FormLabel required={!isUpdate}>Mật khẩu</FormLabel>
-                        <FormControl>
-                          <PasswordInput
-                            autoComplete="new-password"
-                            placeholder="Nhập mật khẩu"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem className="mb-2 space-y-1">
+                          <FormLabel required>Mật khẩu</FormLabel>
+                          <FormControl>
+                            <PasswordInput
+                              autoComplete="new-password"
+                              placeholder="Nhập mật khẩu"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="rePassword"
+                      render={({ field }) => (
+                        <FormItem className="mb-2 space-y-1">
+                          <FormLabel required>Xác nhận mật khẩu</FormLabel>
+                          <FormControl>
+                            <PasswordInput
+                              autoComplete="new-password"
+                              placeholder="Xác nhận mật khẩu"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
                 )}
 
-                {!isUpdate && (
-                  <FormField
-                    control={form.control}
-                    name="rePassword"
-                    render={({ field }) => (
-                      <FormItem className="mb-2 space-y-1">
-                        <FormLabel required>Xác nhận mật khẩu</FormLabel>
-                        <FormControl>
-                          <PasswordInput
-                            autoComplete="new-password"
-                            placeholder="Xác nhận mật khẩu"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
+                {/* Ngày sinh + giới tính (chỉ cho KH cá nhân hoặc chưa chọn group) */}
                 {(!selectedCustomerGroup ||
                   selectedCustomerGroup?.type === 'individual') && (
                   <>
@@ -407,7 +415,6 @@ const UserDialog = ({
                         )
                       }}
                     />
-
                     <FormField
                       control={form.control}
                       name="gender"
@@ -443,6 +450,7 @@ const UserDialog = ({
                   </>
                 )}
 
+                {/* phone_number */}
                 <FormField
                   control={form.control}
                   name="phone_number"
@@ -457,6 +465,7 @@ const UserDialog = ({
                   )}
                 />
 
+                {/* email */}
                 <FormField
                   control={form.control}
                   name="email"
@@ -475,6 +484,7 @@ const UserDialog = ({
                   )}
                 />
 
+                {/* address */}
                 <FormField
                   control={form.control}
                   name="address"
@@ -489,6 +499,7 @@ const UserDialog = ({
                   )}
                 />
 
+                {/* avatar_url */}
                 <FormField
                   control={form.control}
                   name="avatar_url"
@@ -531,6 +542,7 @@ const UserDialog = ({
                   )}
                 />
 
+                {/* role_id chỉ cho admin */}
                 {isModal === 'admin' && (
                   <FormField
                     control={form.control}
@@ -566,6 +578,7 @@ const UserDialog = ({
                   />
                 )}
 
+                {/* status */}
                 <FormField
                   control={form.control}
                   name="status"
@@ -615,12 +628,12 @@ const UserDialog = ({
               Hủy
             </Button>
           </DialogClose>
-
           <Button form="user-form" loading={loading}>
             {isUpdate ? 'Cập nhật' : 'Thêm mới'}
           </Button>
         </DialogFooter>
       </DialogContent>
+
       {mediaModalOpen && (
         <MediaModal
           open={mediaModalOpen}
