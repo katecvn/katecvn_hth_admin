@@ -158,6 +158,10 @@ const UserDialog = ({
         user_type: isModal === 'admin' ? 'admin' : 'customer',
       }
 
+      if (data.customerGroupId == '') {
+        payload.customerGroupId = null
+      }
+
       if (isUpdate && userData) {
         await dispatch(
           updateUser({

@@ -4,15 +4,27 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { toast } from 'sonner'
 
 export const getCustomerGroup = createAsyncThunk(
-  'customerGroup',
+  'customerGroup/getAll',
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get('/customer-group/shows')
       const { data } = response.data
       return data.groups
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(message)
+      return rejectWithValue(error)
+    }
+  },
+)
+
+export const getCustomerGroupWithoutDiscount = createAsyncThunk(
+  'customerGroup/getWithoutDiscount',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/customer-group/shows-without-discount')
+      const { data } = response.data
+      return data.groups
+    } catch (error) {
+      return rejectWithValue(handleError(error))
     }
   },
 )
@@ -25,8 +37,7 @@ export const deleteCustomerGroup = createAsyncThunk(
       await dispatch(getCustomerGroup()).unwrap()
       toast.success('Xóa phân loại khách hàng thành công')
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(message)
+      return rejectWithValue(error)
     }
   },
 )
@@ -39,8 +50,7 @@ export const createCustomerGroup = createAsyncThunk(
       await dispatch(getCustomerGroup()).unwrap()
       toast.success('Thêm phân loại khách hàng thành công')
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(message)
+      return rejectWithValue(handleError(error))
     }
   },
 )
@@ -54,8 +64,7 @@ export const updateCustomerGroup = createAsyncThunk(
       await dispatch(getCustomerGroup()).unwrap()
       toast.success('Cập nhật phân loại khách hàng thành công')
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(message)
+      return rejectWithValue(handleError(error))
     }
   },
 )
@@ -63,6 +72,7 @@ export const updateCustomerGroup = createAsyncThunk(
 const initialState = {
   customerGroup: {},
   customerGroups: [],
+  customerGroupsWithoutDiscount: [],
   loading: false,
   error: null,
 }
@@ -73,7 +83,6 @@ export const customerGroupSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // create
       .addCase(createCustomerGroup.pending, (state) => {
         state.loading = true
         state.error = null
@@ -83,10 +92,9 @@ export const customerGroupSlice = createSlice({
       })
       .addCase(createCustomerGroup.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
-        toast.error(state.error)
+        state.error = action.payload
       })
-      // get
+
       .addCase(getCustomerGroup.pending, (state) => {
         state.loading = true
         state.error = null
@@ -97,10 +105,28 @@ export const customerGroupSlice = createSlice({
       })
       .addCase(getCustomerGroup.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
+        state.error =
+          action.payload?.message ||
+          'Không thể tải danh sách phân loại khách hàng'
         toast.error(state.error)
       })
-      // delete
+
+      .addCase(getCustomerGroupWithoutDiscount.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(getCustomerGroupWithoutDiscount.fulfilled, (state, action) => {
+        state.loading = false
+        state.customerGroupsWithoutDiscount = action.payload
+      })
+      .addCase(getCustomerGroupWithoutDiscount.rejected, (state, action) => {
+        state.loading = false
+        state.error =
+          action.payload?.message ||
+          'Không thể tải danh sách phân loại khách hàng chưa có giảm giá'
+        toast.error(state.error)
+      })
+
       .addCase(deleteCustomerGroup.pending, (state) => {
         state.loading = true
         state.error = null
@@ -110,10 +136,11 @@ export const customerGroupSlice = createSlice({
       })
       .addCase(deleteCustomerGroup.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
+        state.error =
+          action.payload?.message || 'Không thể xóa phân loại khách hàng'
         toast.error(state.error)
       })
-      // update
+
       .addCase(updateCustomerGroup.pending, (state) => {
         state.loading = true
         state.error = null
@@ -123,8 +150,7 @@ export const customerGroupSlice = createSlice({
       })
       .addCase(updateCustomerGroup.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
-        toast.error(state.error)
+        state.error = action.payload
       })
   },
 })

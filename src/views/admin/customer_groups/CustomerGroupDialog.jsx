@@ -92,16 +92,17 @@ const CustomerGroupDialog = ({
 
       if (typeof errorMessage === 'object') {
         Object.keys(errorMessage).forEach((field) => {
-          form.setError(field, {
-            type: 'server',
-            message: errorMessage[field],
-          })
+          if (field === 'message') {
+            toast.error(errorMessage[field])
+          } else {
+            form.setError(field, {
+              type: 'server',
+              message: errorMessage[field],
+            })
+          }
         })
       } else {
-        form.setError('name', {
-          type: 'server',
-          message: errorMessage,
-        })
+        toast.error(errorMessage)
       }
     }
   }

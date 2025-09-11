@@ -161,6 +161,12 @@ export const sideLinks = [
         icon: <IconUsersGroup size={18} />,
         permission: 'user_view',
       },
+      {
+        title: 'Giảm giá theo khách hàng',
+        href: '/customer-group-discount',
+        icon: <IconDiscount size={18} />,
+        permission: 'user_view',
+      },
     ],
   },
 

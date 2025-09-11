@@ -18,7 +18,6 @@ import contactSliceReducer from './ContactSlice'
 import productSliceReducer from './ProductSlice'
 import optionSliceReducer from './OptionSlice'
 import groupSliceReducer from './GroupSlice'
-import customerGroupSliceReducer from './CustomerGroupSlice'
 import commentSliceReducer from '@/views/admin/comment/CommentSlice'
 import discountSliceReducer from './DiscountSlice'
 import invoiceSliceReducer from './InvoiceSlice'
@@ -27,6 +26,8 @@ import specificationGroupSliceReducer from './SpecificationGroupSlice'
 import specificationSliceReducer from './SpecificationSlice'
 import productAttributeSliceReducer from './ProductAttributeSlice'
 import productVariantSliceReducer from './ProductVariantSlice'
+import customerGroupSliceReducer from './CustomerGroupSlice'
+import customerGroupDiscountSliceReducer from './CustomerGroupDiscountSlice'
 
 const persistConfig = { key: 'katec-vn', storage }
 
@@ -59,6 +60,7 @@ export const store = configureStore({
     productAttribute: productAttributeSliceReducer,
     productVariant: productVariantSliceReducer,
     customerGroup: customerGroupSliceReducer,
+    customerGroupDiscount: customerGroupDiscountSliceReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),
