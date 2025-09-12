@@ -111,6 +111,12 @@ export const sideLinks = [
         href: '/brand',
         icon: <IconBuildingFactory2 size={18} />,
       },
+      {
+        title: 'Lịch sử giá theo khách hàng',
+        href: '/product-price-history',
+        icon: <IconListDetails size={18} />,
+        permission: 'user_view',
+      },
     ],
   },
   {

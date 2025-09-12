@@ -9,7 +9,6 @@ export const getProducts = createAsyncThunk(
     try {
       const response = await api.get('/product/shows')
       const { data } = response.data
-
       return data.products
     } catch (error) {
       const message = handleError(error)
@@ -24,8 +23,37 @@ export const getProduct = createAsyncThunk(
     try {
       const response = await api.get(`/product/show/${id}`)
       const { data } = response.data
-
       return data
+    } catch (error) {
+      const message = handleError(error)
+      return rejectWithValue(message)
+    }
+  },
+)
+
+export const getProductsByCustomer = createAsyncThunk(
+  'product/by-customer',
+  async (customerId, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/product/by-customer/${customerId}`)
+      const { data } = response.data
+      return data.products
+    } catch (error) {
+      const message = handleError(error)
+      return rejectWithValue(message)
+    }
+  },
+)
+
+export const getProductPriceHistoryByCustomer = createAsyncThunk(
+  'product/history-by-customer',
+  async ({ customerId, productId }, { rejectWithValue }) => {
+    try {
+      const response = await api.get(
+        `/product/history/${customerId}/${productId}`,
+      )
+      const { data } = response.data
+      return { key: `${customerId}-${productId}`, histories: data.histories }
     } catch (error) {
       const message = handleError(error)
       return rejectWithValue(message)
@@ -38,7 +66,6 @@ export const createProduct = createAsyncThunk(
   async (data, { rejectWithValue, dispatch }) => {
     try {
       await api.post('/product/create', data)
-
       await dispatch(getProducts()).unwrap()
       toast.success('Thêm mới thành công')
     } catch (error) {
@@ -51,10 +78,8 @@ export const updateProductStatus = createAsyncThunk(
   'product/update-status',
   async (data, { rejectWithValue, dispatch }) => {
     const { id, status } = data
-
     try {
       await api.put(`/product/update-status/${id}`, { status })
-
       await dispatch(getProducts()).unwrap()
       toast.success('Cập nhật trạng thái thành công')
     } catch (error) {
@@ -68,7 +93,6 @@ export const updateProduct = createAsyncThunk(
   async ({ id, data }, { rejectWithValue, dispatch }) => {
     try {
       await api.put(`/product/update/${id}`, data)
-
       await dispatch(getProducts()).unwrap()
       toast.success('Cập nhật thành công')
     } catch (error) {
@@ -82,9 +106,8 @@ export const deleteProduct = createAsyncThunk(
   async (id, { rejectWithValue, dispatch }) => {
     try {
       await api.delete(`/product/destroy/${id}`)
-
       await dispatch(getProducts()).unwrap()
-      toast.success('Cập nhật thành công')
+      toast.success('Xóa thành công')
     } catch (error) {
       return rejectWithValue(error)
     }
@@ -96,7 +119,6 @@ export const sendProductToBCCU = createAsyncThunk(
   async (id, { rejectWithValue, dispatch }) => {
     try {
       await api.get(`/product/send-bccu/${id}`)
-
       await dispatch(getProducts()).unwrap()
       toast.success('Gửi thành công')
     } catch (error) {
@@ -108,6 +130,8 @@ export const sendProductToBCCU = createAsyncThunk(
 const initialState = {
   product: {},
   products: [],
+  customerProducts: {},
+  priceHistories: {},
   loading: false,
   error: null,
 }
@@ -127,7 +151,7 @@ export const productSlice = createSlice({
       })
       .addCase(createProduct.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload.message || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
       .addCase(getProducts.pending, (state) => {
@@ -140,7 +164,7 @@ export const productSlice = createSlice({
       })
       .addCase(getProducts.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload.message || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
       .addCase(getProduct.pending, (state) => {
@@ -153,55 +177,30 @@ export const productSlice = createSlice({
       })
       .addCase(getProduct.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload.message || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
-      .addCase(updateProductStatus.pending, (state) => {
-        state.loading = true
-        state.error = null
+      .addCase(getProductsByCustomer.fulfilled, (state, action) => {
+        state.customerProducts[action.meta.arg] = action.payload
       })
-      .addCase(updateProductStatus.fulfilled, (state, action) => {
-        state.loading = false
+      .addCase(getProductPriceHistoryByCustomer.fulfilled, (state, action) => {
+        const { key, histories } = action.payload
+        state.priceHistories[key] = histories
       })
       .addCase(updateProductStatus.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload.message || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
-      })
-      .addCase(updateProduct.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(updateProduct.fulfilled, (state, action) => {
-        state.loading = false
       })
       .addCase(updateProduct.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload.message || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
-      })
-      .addCase(deleteProduct.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(deleteProduct.fulfilled, (state, action) => {
-        state.loading = false
       })
       .addCase(deleteProduct.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload.message || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
-      .addCase(sendProductToBCCU.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(sendProductToBCCU.fulfilled, (state, action) => {
-        state.loading = false
-      })
       .addCase(sendProductToBCCU.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload.message || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
   },

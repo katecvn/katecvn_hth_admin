@@ -4,6 +4,7 @@ import { Layout, LayoutBody } from '@/components/custom/Layout'
 import { DataTable } from '@/components/DataTable'
 import { dateFormat } from '@/utils/date-format'
 import { getCustomerGroupDiscountHistories } from '@/stores/CustomerGroupDiscountHistorySlice'
+import { getCustomerGroup } from '@/stores/CustomerGroupSlice'
 
 const CustomerGroupDiscountHistoryPage = () => {
   const dispatch = useDispatch()
@@ -11,10 +12,14 @@ const CustomerGroupDiscountHistoryPage = () => {
     (s) => s.customerGroupDiscountHistory.histories || [],
   )
   const loading = useSelector((s) => s.customerGroupDiscountHistory.loading)
+  const customerGroups = useSelector(
+    (s) => s.customerGroup.customerGroups || [],
+  )
 
   useEffect(() => {
     document.title = 'Lịch sử giảm giá khách hàng'
     dispatch(getCustomerGroupDiscountHistories())
+    dispatch(getCustomerGroup())
   }, [dispatch])
 
   const formatDiscountValue = (value, type) => {
@@ -46,11 +51,26 @@ const CustomerGroupDiscountHistoryPage = () => {
       cell: ({ row }) => <div>{row.index + 1}</div>,
     },
     {
-      accessorKey: 'customerGroup',
+      accessorKey: 'customerGroupId',
       header: 'Phân loại khách hàng',
       cell: ({ row }) => (
         <div>{row.original?.customerGroup?.name || 'Không xác định'}</div>
       ),
+      filterFn: (row, id, valueArr) => {
+        if (!Array.isArray(valueArr) || valueArr.length === 0) return true
+        const groupId = row.original?.customerGroup?.id
+        return valueArr.includes(groupId)
+      },
+      enableSorting: false,
+      enableHiding: true,
+      meta: {
+        filterType: 'multiselect',
+        placeholder: 'Lọc phân loại',
+        options: customerGroups.map((group) => ({
+          label: group.name,
+          value: group.id,
+        })),
+      },
     },
     {
       id: 'oldValueFormatted',
