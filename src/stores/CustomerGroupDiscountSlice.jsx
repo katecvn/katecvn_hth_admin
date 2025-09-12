@@ -15,6 +15,19 @@ export const getCustomerGroupDiscounts = createAsyncThunk(
   },
 )
 
+export const getCustomerGroupDiscountById = createAsyncThunk(
+  'customerGroupDiscount/getById',
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await api.get(`/customer-group-discount/show/${id}`)
+      console.log(res.data.data)
+      return res.data.data || null
+    } catch (error) {
+      return rejectWithValue(handleError(error))
+    }
+  },
+)
+
 export const createCustomerGroupDiscount = createAsyncThunk(
   'customerGroupDiscount/create',
   async (data, { rejectWithValue, dispatch }) => {
@@ -56,6 +69,7 @@ export const deleteCustomerGroupDiscount = createAsyncThunk(
 
 const initialState = {
   discounts: [],
+  currentDiscount: null,
   loading: false,
   error: null,
 }
@@ -78,6 +92,21 @@ const customerGroupDiscountSlice = createSlice({
         state.loading = false
         state.error =
           action.payload?.message || 'Không thể tải danh sách giảm giá'
+        toast.error(state.error)
+      })
+
+      .addCase(getCustomerGroupDiscountById.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(getCustomerGroupDiscountById.fulfilled, (state, action) => {
+        state.loading = false
+        state.currentDiscount = action.payload
+      })
+      .addCase(getCustomerGroupDiscountById.rejected, (state, action) => {
+        state.loading = false
+        state.error =
+          action.payload?.message || 'Không thể tải chi tiết giảm giá'
         toast.error(state.error)
       })
 

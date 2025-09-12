@@ -35,6 +35,7 @@ import {
 import {
   createCustomerGroupDiscount,
   updateCustomerGroupDiscount,
+  getCustomerGroupDiscountById,
 } from '@/stores/CustomerGroupDiscountSlice'
 import {
   getCustomerGroupWithoutDiscount,
@@ -45,13 +46,16 @@ import { toast } from 'sonner'
 const CustomerGroupDiscountDialog = ({
   open,
   onOpenChange,
-  initialData = null,
+  discountId = null,
   isEditing = false,
 }) => {
   const dispatch = useDispatch()
   const loading = useSelector((s) => s.customerGroupDiscount.loading)
+  const currentDiscount = useSelector(
+    (s) => s.customerGroupDiscount.currentDiscount,
+  )
   const customerGroups = useSelector(
-    (s) => s.customerGroup.customerGroups || [],
+    (s) => s.customerGroup.customerGroupsWithoutDiscount || [],
   )
 
   const form = useForm({
@@ -61,10 +65,10 @@ const CustomerGroupDiscountDialog = ({
         : createCustomerGroupDiscountSchema,
     ),
     defaultValues: {
-      customerGroupId: initialData?.customerGroupId?.toString() || '',
-      discountType: initialData?.discountType || 'percentage',
-      discountValue: initialData?.discountValue || 0,
-      status: initialData?.status || 'active',
+      customerGroupId: '',
+      discountType: 'percentage',
+      discountValue: 0,
+      status: 'active',
     },
   })
 
@@ -72,12 +76,24 @@ const CustomerGroupDiscountDialog = ({
   const discountValue = form.watch('discountValue')
 
   useEffect(() => {
-    if (isEditing) {
-      dispatch(getCustomerGroup()) // lấy đủ group để hiển thị group đã có giảm giá
+    if (isEditing && discountId) {
+      dispatch(getCustomerGroupDiscountById(discountId))
+      dispatch(getCustomerGroup())
     } else {
-      dispatch(getCustomerGroupWithoutDiscount()) // chỉ lấy group chưa có giảm giá
+      dispatch(getCustomerGroupWithoutDiscount())
     }
-  }, [dispatch, isEditing])
+  }, [dispatch, isEditing, discountId])
+
+  useEffect(() => {
+    if (isEditing && currentDiscount) {
+      form.reset({
+        customerGroupId: currentDiscount.customerGroupId?.toString() || '',
+        discountType: currentDiscount.discountType || 'percentage',
+        discountValue: currentDiscount.discountValue || 0,
+        status: currentDiscount.status || 'active',
+      })
+    }
+  }, [currentDiscount, form, isEditing])
 
   const formatDisplayValue = () => {
     if (discountValue === null || discountValue === undefined) return ''
@@ -100,9 +116,9 @@ const CustomerGroupDiscountDialog = ({
         discountValue: Number(data.discountValue),
       }
 
-      if (isEditing) {
+      if (isEditing && discountId) {
         await dispatch(
-          updateCustomerGroupDiscount({ id: initialData.id, data: payload }),
+          updateCustomerGroupDiscount({ id: discountId, data: payload }),
         ).unwrap()
       } else {
         await dispatch(createCustomerGroupDiscount(payload)).unwrap()
@@ -158,24 +174,27 @@ const CustomerGroupDiscountDialog = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel required>Phân loại khách hàng</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={isEditing}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn phân loại" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {customerGroups.map((g) => (
-                        <SelectItem key={g.id} value={String(g.id)}>
-                          {g.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {isEditing ? (
+                    <Input
+                      value={currentDiscount?.customerGroup?.name || ''}
+                      disabled
+                    />
+                  ) : (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn phân loại" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {customerGroups.map((g) => (
+                          <SelectItem key={g.id} value={String(g.id)}>
+                            {g.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -233,8 +252,8 @@ const CustomerGroupDiscountDialog = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="active">Hoạt động</SelectItem>
-                      <SelectItem value="inactive">Ngưng</SelectItem>
+                      <SelectItem value="active">Áp dụng</SelectItem>
+                      <SelectItem value="inactive">Ngưng áp dụng</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

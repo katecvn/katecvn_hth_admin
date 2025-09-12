@@ -25,7 +25,7 @@ const CustomerGroupDiscountPage = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showUpdateDialog, setShowUpdateDialog] = useState(false)
-  const [itemChoice, setItemChoice] = useState({})
+  const [selectedId, setSelectedId] = useState(null)
 
   const handleDelete = async (id) => {
     try {
@@ -39,6 +39,14 @@ const CustomerGroupDiscountPage = () => {
     document.title = 'Quản lý giảm giá phân loại khách hàng'
     dispatch(getCustomerGroupDiscounts())
   }, [dispatch])
+
+  const formatDiscountValue = (value, type) => {
+    if (value === null || value === undefined) return ''
+    if (type === 'percentage') {
+      return `${Number(value)}%`
+    }
+    return `${Number(value).toLocaleString('vi-VN')} đ`
+  }
 
   const columns = [
     {
@@ -64,7 +72,14 @@ const CustomerGroupDiscountPage = () => {
     {
       accessorKey: 'discountValue',
       header: 'Giá trị giảm',
-      cell: ({ row }) => <div>{row.getValue('discountValue')}</div>,
+      cell: ({ row }) => (
+        <div>
+          {formatDiscountValue(
+            row.getValue('discountValue'),
+            row.original?.discountType,
+          )}
+        </div>
+      ),
     },
     {
       accessorKey: 'status',
@@ -77,7 +92,9 @@ const CustomerGroupDiscountPage = () => {
               : 'text-red-500'
           }`}
         >
-          {row.getValue('status') === 'active' ? 'Đang áp dụng' : 'Ngưng'}
+          {row.getValue('status') === 'active'
+            ? 'Đang áp dụng'
+            : 'Ngưng áp dụng'}
         </span>
       ),
     },
@@ -97,7 +114,7 @@ const CustomerGroupDiscountPage = () => {
             size="sm"
             title="Chi tiết"
             onClick={() => {
-              setItemChoice(row)
+              setSelectedId(row.original?.id)
               setShowUpdateDialog(true)
             }}
           >
@@ -109,7 +126,7 @@ const CustomerGroupDiscountPage = () => {
             className="text-red-500"
             title="Xóa"
             onClick={() => {
-              setItemChoice(row)
+              setSelectedId(row.original?.id)
               setShowDeleteDialog(true)
             }}
           >
@@ -138,7 +155,6 @@ const CustomerGroupDiscountPage = () => {
             <CustomerGroupDiscountDialog
               open={showCreateDialog}
               onOpenChange={setShowCreateDialog}
-              initialData={null}
             />
           )}
         </Can>
@@ -176,8 +192,8 @@ const CustomerGroupDiscountPage = () => {
         <ConfirmDialog
           open={showDeleteDialog}
           onOpenChange={setShowDeleteDialog}
-          description={`Hành động này không thể hoàn tác. Giảm giá của phân loại: ${itemChoice.original?.customerGroup?.name} sẽ bị xóa.`}
-          onConfirm={() => handleDelete(itemChoice.original?.id)}
+          description="Hành động này không thể hoàn tác. Giảm giá sẽ bị xóa."
+          onConfirm={() => handleDelete(selectedId)}
           loading={loading}
         />
       )}
@@ -186,7 +202,7 @@ const CustomerGroupDiscountPage = () => {
         <CustomerGroupDiscountDialog
           open={showUpdateDialog}
           onOpenChange={setShowUpdateDialog}
-          initialData={{ ...itemChoice.original }}
+          discountId={selectedId}
           isEditing={true}
         />
       )}
