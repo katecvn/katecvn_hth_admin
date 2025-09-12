@@ -28,6 +28,7 @@ import productAttributeSliceReducer from './ProductAttributeSlice'
 import productVariantSliceReducer from './ProductVariantSlice'
 import customerGroupSliceReducer from './CustomerGroupSlice'
 import customerGroupDiscountSliceReducer from './CustomerGroupDiscountSlice'
+import customerGroupDiscountHisotySliceReducer from './CustomerGroupDiscountHistorySlice'
 
 const persistConfig = { key: 'katec-vn', storage }
 
@@ -61,6 +62,7 @@ export const store = configureStore({
     productVariant: productVariantSliceReducer,
     customerGroup: customerGroupSliceReducer,
     customerGroupDiscount: customerGroupDiscountSliceReducer,
+    customerGroupDiscountHistory: customerGroupDiscountHisotySliceReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),

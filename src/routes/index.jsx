@@ -17,6 +17,7 @@ import TopicPage from '@/views/admin/topic/TopicPage'
 import UserPage from '@/views/admin/user/UserPage'
 import CustomerGroupPage from '@/views/admin/customer_groups/CustomerGroupPage'
 import CustomerGroupDiscountPage from '@/views/admin/customer_group_discounts/CustomerGroupDiscountPage'
+import CustomerGroupDiscountHistoryPage from '@/views/admin/customer_group_discount_histories/CustomerGroupDiscountHistoryPage'
 import CallbackGoogle from '@/views/auth/components/CallbackGoogle'
 import ForgotPasswordPage from '@/views/auth/ForgotPasswordPage'
 import LoginPage from '@/views/auth/LoginPage'
@@ -79,6 +80,11 @@ const routes = [
   {
     path: '/customer-group-discount',
     element: CustomerGroupDiscountPage,
+    layout: AdminLayout,
+  },
+  {
+    path: '/customer-group-discount-history',
+    element: CustomerGroupDiscountHistoryPage,
     layout: AdminLayout,
   },
 

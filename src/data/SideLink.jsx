@@ -167,6 +167,12 @@ export const sideLinks = [
         icon: <IconDiscount size={18} />,
         permission: 'user_view',
       },
+      {
+        title: 'Lịch sử giảm giá',
+        href: '/customer-group-discount-history',
+        icon: <IconListDetails size={18} />,
+        permission: 'user_view',
+      },
     ],
   },
 
