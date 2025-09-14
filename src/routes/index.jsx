@@ -16,8 +16,6 @@ import CommentPage from '@/views/admin/comment/CommentPage'
 import TopicPage from '@/views/admin/topic/TopicPage'
 import UserPage from '@/views/admin/user/UserPage'
 import CustomerGroupPage from '@/views/admin/customer_groups/CustomerGroupPage'
-import CustomerGroupDiscountPage from '@/views/admin/customer_group_discounts/CustomerGroupDiscountPage'
-import CustomerGroupDiscountHistoryPage from '@/views/admin/customer_group_discount_histories/CustomerGroupDiscountHistoryPage'
 import ProductPricesHistoryPage from '@/views/admin/product/ProductPricesHistoryPage'
 import CallbackGoogle from '@/views/auth/components/CallbackGoogle'
 import ForgotPasswordPage from '@/views/auth/ForgotPasswordPage'
@@ -33,6 +31,7 @@ import SpecificationGroupPage from '@/views/admin/specification_group/Specificat
 import SpecificationPage from '@/views/admin/specification/SpecificationPage'
 import ProductAttributePage from '@/views/admin/product_attribute/ProductAttributePage'
 import VariantPage from '@/views/admin/variant/VariantPage'
+import CustomerGroupProductDiscountPage from '@/views/admin/customer_group_product_discounts/CustomerProductDiscountPage'
 
 const routes = [
   {
@@ -78,17 +77,6 @@ const routes = [
     element: CustomerGroupPage,
     layout: AdminLayout,
   },
-  {
-    path: '/customer-group-discount',
-    element: CustomerGroupDiscountPage,
-    layout: AdminLayout,
-  },
-  {
-    path: '/customer-group-discount-history',
-    element: CustomerGroupDiscountHistoryPage,
-    layout: AdminLayout,
-  },
-
   {
     path: '/product-price-history',
     element: ProductPricesHistoryPage,
@@ -173,6 +161,12 @@ const routes = [
   {
     path: '/invoice',
     element: InvoicePage,
+    layout: AdminLayout,
+  },
+
+  {
+    path: '/customer-group-discount',
+    element: CustomerGroupProductDiscountPage,
     layout: AdminLayout,
   },
 

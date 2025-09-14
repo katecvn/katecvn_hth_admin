@@ -29,43 +29,25 @@ import { Input } from '@/components/ui/input'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
-  createCustomerGroupDiscountSchema,
-  updateCustomerGroupDiscountSchema,
-} from './SchemaCustomerGroupDiscount'
+  createProductDiscountSchema,
+  updateProductDiscountSchema,
+} from './SchemaCustomerProductDiscount'
 import {
-  createCustomerGroupDiscount,
-  updateCustomerGroupDiscount,
-  getCustomerGroupDiscountById,
-} from '@/stores/CustomerGroupDiscountSlice'
-import {
-  getCustomerGroupWithoutDiscount,
-  getCustomerGroup,
-} from '@/stores/CustomerGroupSlice'
+  createCustomerProductDiscount,
+  updateCustomerProductDiscount,
+} from '@/stores/CustomerProductDiscountSlice'
 import { toast } from 'sonner'
 
-const CustomerGroupDiscountDialog = ({
-  open,
-  onOpenChange,
-  discountId = null,
-  isEditing = false,
-}) => {
+const CustomerProductDiscountDialog = ({ open, onOpenChange, product, customerGroupId }) => {
   const dispatch = useDispatch()
-  const loading = useSelector((s) => s.customerGroupDiscount.loading)
-  const currentDiscount = useSelector(
-    (s) => s.customerGroupDiscount.currentDiscount,
-  )
-  const customerGroups = useSelector(
-    (s) => s.customerGroup.customerGroupsWithoutDiscount || [],
-  )
+  const loading = useSelector((s) => s.customerProductDiscount.loading)
+  const isEditing = !!product?.currentDiscount
 
   const form = useForm({
     resolver: zodResolver(
-      isEditing
-        ? updateCustomerGroupDiscountSchema
-        : createCustomerGroupDiscountSchema,
+      isEditing ? updateProductDiscountSchema : createProductDiscountSchema,
     ),
     defaultValues: {
-      customerGroupId: '',
       discountType: 'percentage',
       discountValue: 0,
       status: 'active',
@@ -76,24 +58,14 @@ const CustomerGroupDiscountDialog = ({
   const discountValue = form.watch('discountValue')
 
   useEffect(() => {
-    if (isEditing && discountId) {
-      dispatch(getCustomerGroupDiscountById(discountId))
-      dispatch(getCustomerGroup())
-    } else {
-      dispatch(getCustomerGroupWithoutDiscount())
-    }
-  }, [dispatch, isEditing, discountId])
-
-  useEffect(() => {
-    if (isEditing && currentDiscount) {
+    if (isEditing && product?.currentDiscount) {
       form.reset({
-        customerGroupId: currentDiscount.customerGroupId?.toString() || '',
-        discountType: currentDiscount.discountType || 'percentage',
-        discountValue: currentDiscount.discountValue || 0,
-        status: currentDiscount.status || 'active',
+        discountType: product.currentDiscount.discountType || 'percentage',
+        discountValue: product.currentDiscount.discountValue || 0,
+        status: product.currentDiscount.status || 'active',
       })
     }
-  }, [currentDiscount, form, isEditing])
+  }, [isEditing, product, form])
 
   const formatDisplayValue = () => {
     if (discountValue === null || discountValue === undefined) return ''
@@ -114,14 +86,20 @@ const CustomerGroupDiscountDialog = ({
       const payload = {
         ...data,
         discountValue: Number(data.discountValue),
+        customerGroupId,
+        productId: product.id,
       }
 
-      if (isEditing && discountId) {
+      if (isEditing) {
         await dispatch(
-          updateCustomerGroupDiscount({ id: discountId, data: payload }),
+          updateCustomerProductDiscount({
+            id: product.currentDiscount.id,
+            data: payload,
+            customerGroupId,
+          }),
         ).unwrap()
       } else {
-        await dispatch(createCustomerGroupDiscount(payload)).unwrap()
+        await dispatch(createCustomerProductDiscount(payload)).unwrap()
       }
       form.reset()
       onOpenChange(false)
@@ -152,54 +130,20 @@ const CustomerGroupDiscountDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="md:max-w-xl">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? 'Cập nhật giảm giá' : 'Thêm giảm giá'}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? 'Cập nhật giảm giá' : 'Thêm giảm giá'}</DialogTitle>
           <DialogDescription>
             {isEditing
-              ? 'Sửa thông tin giảm giá theo phân loại khách hàng'
+              ? 'Sửa thông tin giảm giá cho sản phẩm này'
               : 'Nhập thông tin giảm giá mới'}
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form
-            id="discount-form"
+            id="product-discount-form"
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-4"
           >
-            <FormField
-              control={form.control}
-              name="customerGroupId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>Phân loại khách hàng</FormLabel>
-                  {isEditing ? (
-                    <Input
-                      value={currentDiscount?.customerGroup?.name || ''}
-                      disabled
-                    />
-                  ) : (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn phân loại" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {customerGroups.map((g) => (
-                          <SelectItem key={g.id} value={String(g.id)}>
-                            {g.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <FormField
               control={form.control}
               name="discountType"
@@ -269,7 +213,7 @@ const CustomerGroupDiscountDialog = ({
               Hủy
             </Button>
           </DialogClose>
-          <Button form="discount-form" loading={loading}>
+          <Button form="product-discount-form" loading={loading}>
             {isEditing ? 'Cập nhật' : 'Thêm mới'}
           </Button>
         </DialogFooter>
@@ -278,4 +222,4 @@ const CustomerGroupDiscountDialog = ({
   )
 }
 
-export default CustomerGroupDiscountDialog
+export default CustomerProductDiscountDialog
