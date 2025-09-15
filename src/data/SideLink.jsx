@@ -37,6 +37,12 @@ export const sideLinks = [
     icon: <IconLayoutDashboard size={18} />,
   },
   {
+    title: 'Đơn mua',
+    href: '/purchase-order',
+    // permission: 'order_customer_view',
+    icon: <IconShoppingCartDollar size={18} />,
+  },
+  {
     title: 'Đơn hàng',
     href: '/invoice',
     permission: 'order_view',
@@ -46,6 +52,7 @@ export const sideLinks = [
         title: 'Đơn hàng',
         href: '/invoice',
         icon: <IconFileInvoice size={18} />,
+        permission: 'order_view',
       },
       {
         title: 'Đánh giá',
@@ -149,14 +156,12 @@ export const sideLinks = [
       },
     ],
   },
-
   {
     title: 'Nhân viên',
     href: '/user?role=admin',
     icon: <IconUser size={18} />,
     permission: 'user_view',
   },
-
   {
     title: 'Khách hàng',
     icon: <IconUsersGroup size={18} />,
@@ -176,7 +181,6 @@ export const sideLinks = [
       },
     ],
   },
-
   {
     title: 'Hình ảnh',
     href: '/media',
@@ -189,7 +193,6 @@ export const sideLinks = [
     icon: <IconAddressBook size={18} />,
     permission: 'contact_view',
   },
-
   {
     title: 'Cài đặt',
     href: '/settings',

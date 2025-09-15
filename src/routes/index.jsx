@@ -27,6 +27,7 @@ import AuthLayout from '@/views/layouts/AuthLayout'
 import ErrorLayout from '@/views/layouts/ErrorLayout'
 import DiscountPage from '@/views/admin/discount/DiscountPage'
 import InvoicePage from '@/views/admin/invoice/InvoicePage'
+import PurchaseOrderPage from '@/views/admin/purchase_order/PurchaseOrderPage'
 import SpecificationGroupPage from '@/views/admin/specification_group/SpecificationGroupPage'
 import SpecificationPage from '@/views/admin/specification/SpecificationPage'
 import ProductAttributePage from '@/views/admin/product_attribute/ProductAttributePage'
@@ -39,7 +40,6 @@ const routes = [
     element: DashboardPage,
     layout: AdminLayout,
   },
-
   {
     path: '/category',
     element: CategoryPage,
@@ -65,13 +65,11 @@ const routes = [
     element: CommentPage,
     layout: AdminLayout,
   },
-
   {
     path: '/user',
     element: UserPage,
     layout: AdminLayout,
   },
-
   {
     path: '/customer-group',
     element: CustomerGroupPage,
@@ -82,7 +80,6 @@ const routes = [
     element: ProductPricesHistoryPage,
     layout: AdminLayout,
   },
-
   {
     path: '/role',
     element: RolePage,
@@ -159,17 +156,20 @@ const routes = [
     layout: AdminLayout,
   },
   {
+    path: '/purchase-order',
+    element: PurchaseOrderPage,
+    layout: AdminLayout,
+  },
+  {
     path: '/invoice',
     element: InvoicePage,
     layout: AdminLayout,
   },
-
   {
     path: '/customer-group-discount',
     element: CustomerGroupProductDiscountPage,
     layout: AdminLayout,
   },
-
   {
     path: '/forgot-password',
     element: ForgotPasswordPage,
