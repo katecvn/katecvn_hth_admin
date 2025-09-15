@@ -41,19 +41,43 @@ const ProductPricesHistoryPage = () => {
     }
   }, [selectedGroup, dispatch])
 
+  const renderPrice = (product) => {
+    const basePrice = Number(product.salePrice || product.originalPrice || 0)
+    const discount = product.currentDiscount
+
+    if (!discount) return `${basePrice.toLocaleString('vi-VN')}đ`
+
+    if (discount.status !== 'active') {
+      return `${basePrice.toLocaleString('vi-VN')}đ`
+    }
+
+    if (discount.discountType === 'percentage') {
+      const newPrice =
+        basePrice - (basePrice * Number(discount.discountValue)) / 100
+      return `${newPrice.toLocaleString('vi-VN')}đ (đã giảm ${
+        discount.discountValue
+      }%)`
+    }
+
+    if (discount.discountType === 'fixed') {
+      const newPrice = basePrice - Number(discount.discountValue)
+      return `${newPrice.toLocaleString('vi-VN')}đ (đã giảm ${Number(
+        discount.discountValue,
+      ).toLocaleString('vi-VN')}đ)`
+    }
+
+    return `${basePrice.toLocaleString('vi-VN')}đ`
+  }
+
   const columns = [
     {
       accessorKey: 'name',
       header: 'Tên sản phẩm',
     },
     {
-      accessorKey: 'price',
-      header: 'Giá gốc',
-      cell: ({ row }) => {
-        const product = row.original
-        const basePrice = Number(product.salePrice || product.price || 0)
-        return `${basePrice.toLocaleString('vi-VN')}đ`
-      },
+      accessorKey: 'finalPrice',
+      header: 'Giá cho khách hàng',
+      cell: ({ row }) => renderPrice(row.original),
     },
     {
       id: 'actions',

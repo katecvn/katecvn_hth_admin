@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Dialog,
@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { DataTable } from '@/components/DataTable'
 import { getHistories } from '@/stores/customerProductDiscountHistorySlice'
+import { Input } from '@/components/ui/input'
 
 const ProductPriceHistoryDialog = ({
   open,
@@ -21,6 +22,9 @@ const ProductPriceHistoryDialog = ({
     (s) => s.customerProductDiscountHistory,
   )
 
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+
   useEffect(() => {
     if (open && product) {
       dispatch(getHistories({ customerGroupId, page: 1, limit: 9999 }))
@@ -28,8 +32,20 @@ const ProductPriceHistoryDialog = ({
   }, [open, product, customerGroupId, dispatch])
 
   const productHistories = useMemo(() => {
-    return histories.filter((h) => h.productId === product?.id)
-  }, [histories, product])
+    let filtered = histories.filter((h) => h.productId === product?.id)
+
+    if (dateFrom) {
+      const from = new Date(dateFrom).getTime()
+      filtered = filtered.filter((h) => new Date(h.createdAt).getTime() >= from)
+    }
+
+    if (dateTo) {
+      const to = new Date(dateTo).getTime()
+      filtered = filtered.filter((h) => new Date(h.createdAt).getTime() <= to)
+    }
+
+    return filtered
+  }, [histories, product, dateFrom, dateTo])
 
   const formatPriceWithDiscount = (basePrice, type, value) => {
     if (!type || !value) {
@@ -95,12 +111,28 @@ const ProductPriceHistoryDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="md:max-w-3xl">
+      <DialogContent className="md:max-w-5xl">
         <DialogHeader>
-          <DialogTitle>Lịch sử giá - {product?.name}</DialogTitle>
-          <DialogDescription>
-            Danh sách các lần thay đổi giá cho sản phẩm này
-          </DialogDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle>Lịch sử giá - {product?.name}</DialogTitle>
+              <DialogDescription>
+                Danh sách các lần thay đổi giá cho sản phẩm này
+              </DialogDescription>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+              />
+              <Input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+              />
+            </div>
+          </div>
         </DialogHeader>
         <DataTable
           columns={columns}
