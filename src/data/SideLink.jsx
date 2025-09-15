@@ -35,11 +35,11 @@ export const sideLinks = [
     title: 'Tổng quan',
     href: '/dashboard',
     icon: <IconLayoutDashboard size={18} />,
-    // permission: 'GET_REPORT',
   },
   {
     title: 'Đơn hàng',
     href: '/invoice',
+    permission: 'order_view',
     icon: <IconShoppingCartDollar size={18} />,
     sub: [
       {
@@ -121,13 +121,14 @@ export const sideLinks = [
         title: 'Lịch sử giá sản phẩm',
         href: '/product-price-history',
         icon: <IconFileInvoice size={18} />,
-        permission: 'product_view',
+        permission: 'customer_group_discount_history_view',
       },
     ],
   },
   {
     title: 'Bài viết',
     icon: <IconNews size={18} />,
+    permission: 'post_view',
     sub: [
       {
         title: 'Bài viết',
@@ -192,21 +193,25 @@ export const sideLinks = [
   {
     title: 'Cài đặt',
     href: '/settings',
+    permission: 'setting',
     icon: <IconSettings size={18} />,
     sub: [
       {
         title: 'Menu',
         href: '/navigation',
+        permission: 'setting_menu',
         icon: <IconAdjustments size={18} />,
       },
       {
         title: 'Trang',
         href: '/page',
+        permission: 'setting_page',
         icon: <IconSitemap size={18} />,
       },
       {
         title: 'Cài đặt trang',
         href: '/pagesection',
+        permission: 'setting_page',
         icon: <IconSettingsPause size={18} />,
       },
       {
