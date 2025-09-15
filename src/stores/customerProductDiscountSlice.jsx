@@ -8,7 +8,7 @@ export const getProductsByCustomerGroup = createAsyncThunk(
   async ({ customerGroupId, keyword = '' }, { rejectWithValue }) => {
     try {
       const response = await api.get('/customer-product-discount/products', {
-        params: { customerGroupId, page, limit, keyword },
+        params: { customerGroupId, keyword },
       })
       const { data } = response.data
       return data

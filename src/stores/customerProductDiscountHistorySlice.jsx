@@ -4,12 +4,14 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { toast } from 'sonner'
 
 export const getHistories = createAsyncThunk(
-  'discountHistory/getAll',
-  async (_, { rejectWithValue }) => {
+  'customerProductDiscountHistory/getHistories',
+  async ({ page = 1, limit = 20, customerGroupId }, { rejectWithValue }) => {
     try {
-      const response = await api.get('/customer-group-discount-history/shows')
+      const response = await api.get('/customer-group-discount-history/shows', {
+        params: { page, limit, customerGroupId },
+      })
       const { data } = response.data
-      return data.histories
+      return data
     } catch (error) {
       return rejectWithValue(handleError(error))
     }
@@ -17,10 +19,12 @@ export const getHistories = createAsyncThunk(
 )
 
 export const getHistoryById = createAsyncThunk(
-  'discountHistory/getById',
+  'customerProductDiscountHistory/getHistoryById',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/customer-group-discount-history/show/${id}`)
+      const response = await api.get(
+        `/customer-group-discount-history/show/${id}`,
+      )
       const { data } = response.data
       return data
     } catch (error) {
@@ -31,15 +35,24 @@ export const getHistoryById = createAsyncThunk(
 
 const initialState = {
   histories: [],
-  history: {},
+  pagination: {
+    totalItems: 0,
+    totalPages: 0,
+    currentPage: 1,
+  },
+  historyDetail: null,
   loading: false,
   error: null,
 }
 
-export const customerGroupDiscountHistorySlice = createSlice({
-  name: 'discountHistory',
+export const customerProductDiscountHistorySlice = createSlice({
+  name: 'customerProductDiscountHistory',
   initialState,
-  reducers: {},
+  reducers: {
+    clearHistoryDetail: (state) => {
+      state.historyDetail = null
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getHistories.pending, (state) => {
@@ -48,30 +61,37 @@ export const customerGroupDiscountHistorySlice = createSlice({
       })
       .addCase(getHistories.fulfilled, (state, action) => {
         state.loading = false
-        state.histories = action.payload
+        state.histories = action.payload.histories || []
+        state.pagination = {
+          totalItems: action.payload.totalItems,
+          totalPages: action.payload.totalPages,
+          currentPage: action.payload.currentPage,
+        }
       })
       .addCase(getHistories.rejected, (state, action) => {
         state.loading = false
         state.error =
-          action.payload?.message || 'Không thể tải danh sách lịch sử giảm giá'
+          action.payload?.message || 'Không thể tải lịch sử giảm giá'
         toast.error(state.error)
       })
-
       .addCase(getHistoryById.pending, (state) => {
         state.loading = true
         state.error = null
       })
       .addCase(getHistoryById.fulfilled, (state, action) => {
         state.loading = false
-        state.history = action.payload
+        state.historyDetail = action.payload
       })
       .addCase(getHistoryById.rejected, (state, action) => {
         state.loading = false
         state.error =
-          action.payload?.message || 'Không thể tải chi tiết lịch sử giảm giá'
+          action.payload?.message || 'Không thể tải chi tiết lịch sử'
         toast.error(state.error)
       })
   },
 })
 
-export default customerGroupDiscountHistorySlice.reducer
+export const { clearHistoryDetail } =
+  customerProductDiscountHistorySlice.actions
+
+export default customerProductDiscountHistorySlice.reducer

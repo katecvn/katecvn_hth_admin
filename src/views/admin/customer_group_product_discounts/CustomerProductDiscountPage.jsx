@@ -208,7 +208,7 @@ const CustomerProductDiscountPage = () => {
       children: (
         <div className="flex gap-2">
           <Select value={selectedGroup} onValueChange={setSelectedGroup}>
-            <SelectTrigger className="mx-4 w-[250px]">
+            <SelectTrigger className="mr-2 w-[250px]">
               <SelectValue placeholder="Chọn nhóm khách hàng" />
             </SelectTrigger>
             <SelectContent>
@@ -225,6 +225,7 @@ const CustomerProductDiscountPage = () => {
               variant="outline"
               size="sm"
               onClick={() => setShowBulkDialog(true)}
+              className="mx-0 mr-4"
             >
               Cập nhật giảm giá
             </Button>

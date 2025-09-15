@@ -1,4 +1,5 @@
 const handleError = (error) => {
+  console.log(error)
   if (!error.response) {
     return { message: 'Opps!! Đã có vài lỗi xảy ra' }
   }
