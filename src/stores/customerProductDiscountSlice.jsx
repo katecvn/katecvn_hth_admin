@@ -3,10 +3,9 @@ import { handleError } from '@/utils/handle-error'
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { toast } from 'sonner'
 
-// Lấy danh sách sản phẩm theo group kèm giảm giá
 export const getProductsByCustomerGroup = createAsyncThunk(
   'customerProductDiscount/getProductsByCustomerGroup',
-  async ({ customerGroupId, page = 1, limit = 20, keyword = '' }, { rejectWithValue }) => {
+  async ({ customerGroupId, keyword = '' }, { rejectWithValue }) => {
     try {
       const response = await api.get('/customer-product-discount/products', {
         params: { customerGroupId, page, limit, keyword },
@@ -19,21 +18,21 @@ export const getProductsByCustomerGroup = createAsyncThunk(
   },
 )
 
-// Tạo giảm giá cho sản phẩm
 export const createCustomerProductDiscount = createAsyncThunk(
   'customerProductDiscount/create',
   async (data, { rejectWithValue, dispatch }) => {
     try {
       await api.post('/customer-product-discount/create', data)
-      await dispatch(getProductsByCustomerGroup({ customerGroupId: data.customerGroupId }))
+      await dispatch(
+        getProductsByCustomerGroup({ customerGroupId: data.customerGroupId }),
+      )
       toast.success('Thêm giảm giá thành công')
     } catch (error) {
-      return rejectWithValue(error)
+      return rejectWithValue(handleError(error))
     }
   },
 )
 
-// Cập nhật giảm giá cho sản phẩm
 export const updateCustomerProductDiscount = createAsyncThunk(
   'customerProductDiscount/update',
   async ({ id, data, customerGroupId }, { rejectWithValue, dispatch }) => {
@@ -42,17 +41,18 @@ export const updateCustomerProductDiscount = createAsyncThunk(
       await dispatch(getProductsByCustomerGroup({ customerGroupId }))
       toast.success('Cập nhật giảm giá thành công')
     } catch (error) {
-      return rejectWithValue(error)
+      return rejectWithValue(handleError(error))
     }
   },
 )
 
-// Xóa giảm giá cho sản phẩm
 export const deleteCustomerProductDiscount = createAsyncThunk(
   'customerProductDiscount/delete',
-  async ({ id, customerGroupId }, { rejectWithValue, dispatch }) => {
+  async ({ productId, customerGroupId }, { rejectWithValue, dispatch }) => {
     try {
-      await api.delete(`/customer-product-discount/destroy/${id}`)
+      await api.delete(`/customer-product-discount/destroy`, {
+        data: { productId, customerGroupId },
+      })
       await dispatch(getProductsByCustomerGroup({ customerGroupId }))
       toast.success('Xóa giảm giá thành công')
     } catch (error) {
@@ -61,16 +61,17 @@ export const deleteCustomerProductDiscount = createAsyncThunk(
   },
 )
 
-// Cập nhật giảm giá hàng loạt cho group
 export const bulkUpdateCustomerProductDiscount = createAsyncThunk(
   'customerProductDiscount/bulkUpdate',
   async (data, { rejectWithValue, dispatch }) => {
     try {
       await api.post('/customer-product-discount/bulk-update', data)
-      await dispatch(getProductsByCustomerGroup({ customerGroupId: data.customerGroupId }))
+      await dispatch(
+        getProductsByCustomerGroup({ customerGroupId: data.customerGroupId }),
+      )
       toast.success('Cập nhật giảm giá hàng loạt thành công')
     } catch (error) {
-      return rejectWithValue(error)
+      return rejectWithValue(handleError(error))
     }
   },
 )
@@ -92,7 +93,6 @@ export const customerProductDiscountSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // getProductsByCustomerGroup
       .addCase(getProductsByCustomerGroup.pending, (state) => {
         state.loading = true
         state.error = null
@@ -108,11 +108,11 @@ export const customerProductDiscountSlice = createSlice({
       })
       .addCase(getProductsByCustomerGroup.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Không thể tải sản phẩm theo nhóm khách hàng'
+        state.error =
+          action.payload?.message ||
+          'Không thể tải sản phẩm theo nhóm khách hàng'
         toast.error(state.error)
       })
-
-      // create
       .addCase(createCustomerProductDiscount.pending, (state) => {
         state.loading = true
         state.error = null
@@ -124,8 +124,6 @@ export const customerProductDiscountSlice = createSlice({
         state.loading = false
         state.error = action.payload
       })
-
-      // update
       .addCase(updateCustomerProductDiscount.pending, (state) => {
         state.loading = true
         state.error = null
@@ -137,8 +135,6 @@ export const customerProductDiscountSlice = createSlice({
         state.loading = false
         state.error = action.payload
       })
-
-      // delete
       .addCase(deleteCustomerProductDiscount.pending, (state) => {
         state.loading = true
         state.error = null
@@ -151,8 +147,6 @@ export const customerProductDiscountSlice = createSlice({
         state.error = action.payload?.message || 'Không thể xóa giảm giá'
         toast.error(state.error)
       })
-
-      // bulk update
       .addCase(bulkUpdateCustomerProductDiscount.pending, (state) => {
         state.loading = true
         state.error = null

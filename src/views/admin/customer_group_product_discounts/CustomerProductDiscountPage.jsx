@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Layout, LayoutBody } from '@/components/custom/Layout'
 import { DataTable } from '@/components/DataTable'
@@ -12,7 +12,15 @@ import {
 } from '@/stores/CustomerProductDiscountSlice'
 import CustomerProductDiscountDialog from './CustomerProductDiscountDialog'
 import CustomerProductDiscountBulkDialog from './CustomerProductDiscountBulkDialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+const STORAGE_KEY = 'selected_product_discounts'
 
 const CustomerProductDiscountPage = () => {
   const dispatch = useDispatch()
@@ -43,34 +51,94 @@ const CustomerProductDiscountPage = () => {
     }
   }, [selectedGroup, dispatch])
 
-  const handleDelete = async (id) => {
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      try {
+        setSelectedRows(JSON.parse(saved))
+      } catch {
+        setSelectedRows([])
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedRows))
+  }, [selectedRows])
+
+  const handleDelete = async (productId) => {
     try {
-      await dispatch(deleteCustomerProductDiscount({ id, customerGroupId: selectedGroup })).unwrap()
+      await dispatch(
+        deleteCustomerProductDiscount({
+          productId,
+          customerGroupId: selectedGroup,
+        }),
+      ).unwrap()
     } catch (err) {
       console.error(err)
     }
   }
 
+  const normalizedProducts = useMemo(() => {
+    return products.map((p) => {
+      const discount = p.customerDiscounts?.[0] || null
+      return {
+        ...p,
+        currentDiscount: discount,
+      }
+    })
+  }, [products])
+
   const renderPrice = (product) => {
-    const basePrice = product.salePrice || product.price
+    const basePrice = Number(product.salePrice || product.price || 0)
     const discount = product.currentDiscount
+
     if (!discount) return `${basePrice.toLocaleString('vi-VN')}đ`
+    if (discount.status !== 'active')
+      return `${basePrice.toLocaleString('vi-VN')}đ`
 
     if (discount.discountType === 'percentage') {
-      const newPrice = basePrice - (basePrice * discount.discountValue) / 100
-      return `${newPrice.toLocaleString('vi-VN')}đ (đã giảm ${discount.discountValue}%)`
+      const percent = parseInt(discount.discountValue, 10)
+      const newPrice = basePrice - (basePrice * percent) / 100
+      return `${newPrice.toLocaleString('vi-VN')}đ (đã giảm ${percent}%)`
     }
+
     if (discount.discountType === 'fixed') {
-      const newPrice = basePrice - discount.discountValue
-      return `${newPrice.toLocaleString('vi-VN')}đ (đã giảm ${discount.discountValue.toLocaleString('vi-VN')}đ)`
+      const newPrice = basePrice - Number(discount.discountValue)
+      return `${newPrice.toLocaleString('vi-VN')}đ (đã giảm ${Number(
+        discount.discountValue,
+      ).toLocaleString('vi-VN')}đ)`
     }
+
     return `${basePrice.toLocaleString('vi-VN')}đ`
+  }
+
+  const allSelected =
+    normalizedProducts.length > 0 &&
+    selectedRows.length === normalizedProducts.length
+  const someSelected = selectedRows.length > 0 && !allSelected
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedRows([])
+    } else {
+      setSelectedRows(normalizedProducts.map((p) => p.id))
+    }
   }
 
   const columns = [
     {
-      accessorKey: 'id',
-      header: '',
+      id: 'select',
+      header: () => (
+        <input
+          type="checkbox"
+          checked={allSelected}
+          ref={(el) => {
+            if (el) el.indeterminate = someSelected
+          }}
+          onChange={toggleSelectAll}
+        />
+      ),
       cell: ({ row }) => (
         <input
           type="checkbox"
@@ -79,7 +147,9 @@ const CustomerProductDiscountPage = () => {
             if (e.target.checked) {
               setSelectedRows((prev) => [...prev, row.original.id])
             } else {
-              setSelectedRows((prev) => prev.filter((id) => id !== row.original.id))
+              setSelectedRows((prev) =>
+                prev.filter((id) => id !== row.original.id),
+              )
             }
           }}
         />
@@ -138,7 +208,7 @@ const CustomerProductDiscountPage = () => {
       children: (
         <div className="flex gap-2">
           <Select value={selectedGroup} onValueChange={setSelectedGroup}>
-            <SelectTrigger className="w-[250px]">
+            <SelectTrigger className="mx-4 w-[250px]">
               <SelectValue placeholder="Chọn nhóm khách hàng" />
             </SelectTrigger>
             <SelectContent>
@@ -151,11 +221,13 @@ const CustomerProductDiscountPage = () => {
           </Select>
 
           {selectedRows.length > 0 && (
-            <>
-              <Button variant="outline" size="sm" onClick={() => setShowBulkDialog(true)}>
-                Cập nhật giảm giá
-              </Button>
-            </>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowBulkDialog(true)}
+            >
+              Cập nhật giảm giá
+            </Button>
           )}
         </div>
       ),
@@ -165,10 +237,10 @@ const CustomerProductDiscountPage = () => {
   return (
     <Layout>
       <LayoutBody fixedHeight>
-        <h2 className="text-2xl font-bold mb-2">Giảm giá theo khách hàng</h2>
+        <h2 className="mb-2 text-2xl font-bold">Giảm giá theo khách hàng</h2>
         <DataTable
           columns={columns}
-          data={products}
+          data={normalizedProducts}
           toolbar={toolbar}
           searchKey="name"
           searchPlaceholder="Tìm sản phẩm..."

@@ -32,7 +32,12 @@ import { bulkProductDiscountSchema } from './SchemaCustomerProductDiscount'
 import { bulkUpdateCustomerProductDiscount } from '@/stores/CustomerProductDiscountSlice'
 import { toast } from 'sonner'
 
-const CustomerProductDiscountBulkDialog = ({ open, onOpenChange, customerGroupId, productIds }) => {
+const CustomerProductDiscountBulkDialog = ({
+  open,
+  onOpenChange,
+  customerGroupId,
+  productIds,
+}) => {
   const dispatch = useDispatch()
   const loading = useSelector((s) => s.customerProductDiscount.loading)
 

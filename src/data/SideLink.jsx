@@ -117,6 +117,12 @@ export const sideLinks = [
         icon: <IconDiscount size={18} />,
         permission: 'customer_group_discount_view',
       },
+      {
+        title: 'Lịch sử giá sản phẩm',
+        href: '/product-price-history',
+        icon: <IconFileInvoice size={18} />,
+        permission: 'product_view',
+      },
     ],
   },
   {
