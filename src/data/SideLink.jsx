@@ -67,6 +67,12 @@ export const sideLinks = [
         permission: 'order_view',
       },
       {
+        title: 'Tổng hợp bán hàng',
+        href: '/sales-report',
+        icon: <IconChartBar size={18} />,
+        permission: 'order_view',
+      },
+      {
         title: 'Đánh giá',
         href: '/review',
         icon: <IconStar size={18} />,

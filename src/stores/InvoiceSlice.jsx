@@ -3,88 +3,62 @@ import { handleError } from '@/utils/handle-error'
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { toast } from 'sonner'
 
-// API functions embedded directly in the slice
 const invoiceApi = {
-  getInvoices: async () => {
-    try {
-      const response = await api.get('/order/shows')
-      const { data } = response.data
-      // Trả về mảng rỗng nếu không có dữ liệu
-      return data || { orders: [] }
-    } catch (error) {
-      console.log('Fetch invoices error: ', error)
-      throw error
-    }
+  getInvoices: async (filters) => {
+    const params = {}
+    if (filters?.status) params.status = filters.status
+    if (filters?.shippingStatus) params.shippingStatus = filters.shippingStatus
+    if (filters?.dateRange?.from) params.fromDate = filters.dateRange.from
+    if (filters?.dateRange?.to) params.toDate = filters.dateRange.to
+    const res = await api.get('/order/shows', { params })
+    const { data } = res.data
+    return data || { orders: [] }
   },
-
   getInvoiceDetail: async (id) => {
-    try {
-      const response = await api.get(`/order/${id}`)
-      const { data } = response.data
-      return data
-    } catch (error) {
-      console.log('Fetch invoice detail error: ', error)
-      throw error
-    }
+    const res = await api.get(`/order/${id}`)
+    const { data } = res.data
+    return data
   },
-
   createInvoice: async (data) => {
-    try {
-      const response = await api.post('/invoice/create', data)
-      return response.data
-    } catch (error) {
-      console.log('Create invoice error: ', error)
-      throw error
-    }
+    const res = await api.post('/invoice/create', data)
+    return res.data
   },
-
   updateInvoice: async (id, data) => {
-    try {
-      const response = await api.put(`/invoice/update/${id}`, data)
-      return response.data
-    } catch (error) {
-      console.log('Update invoice error: ', error)
-      throw error
-    }
+    const res = await api.put(`/invoice/update/${id}`, data)
+    return res.data
   },
-
   updateInvoiceStatus: async (id, status) => {
-    try {
-      const response = await api.put(`/order/update-status/${id}`, { status })
-      return response.data
-    } catch (error) {
-      console.log('Update invoice status error: ', error)
-      throw error
-    }
+    const res = await api.put(`/order/update-status/${id}`, { status })
+    return res.data
   },
-
   updateShippingStatus: async (id, data) => {
-    try {
-      const response = await api.put(`/shipping/update-status/${id}`, data)
-      return response.data
-    } catch (error) {}
+    const res = await api.put(`/shipping/update-status/${id}`, data)
+    return res.data
   },
-
   deleteInvoice: async (id) => {
-    try {
-      const response = await api.delete(`/order/destroy/${id}`)
-      return response.data
-    } catch (error) {
-      console.log('Delete invoice error: ', error)
-      throw error
-    }
+    const res = await api.delete(`/order/destroy/${id}`)
+    return res.data
+  },
+  getSalesSummary: async (filters) => {
+    const params = {}
+    if (filters?.dateRange?.from) params.fromDate = filters.dateRange.from
+    if (filters?.dateRange?.to) params.toDate = filters.dateRange.to
+    if (filters?.status) params.status = filters.status
+    if (filters?.shippingStatus) params.shippingStatus = filters.shippingStatus
+    const res = await api.get('/order-purchase-summary', { params })
+    const { data } = res.data
+    return data || []
   },
 }
 
 export const getInvoice = createAsyncThunk(
-  'invoice',
-  async (_, { rejectWithValue }) => {
+  'invoice/list',
+  async (filters, { rejectWithValue }) => {
     try {
-      const data = await invoiceApi.getInvoices()
+      const data = await invoiceApi.getInvoices(filters)
       return data.orders || []
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(message)
+      return rejectWithValue(handleError(error))
     }
   },
 )
@@ -96,8 +70,7 @@ export const getInvoiceDetails = createAsyncThunk(
       const data = await invoiceApi.getInvoiceDetail(id)
       return data
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(message)
+      return rejectWithValue(handleError(error))
     }
   },
 )
@@ -110,8 +83,7 @@ export const createNewInvoice = createAsyncThunk(
       await dispatch(getInvoice()).unwrap()
       toast.success('Thêm mới hóa đơn thành công')
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(error)
+      return rejectWithValue(handleError(error))
     }
   },
 )
@@ -125,8 +97,7 @@ export const updateExistingInvoice = createAsyncThunk(
       await dispatch(getInvoice()).unwrap()
       toast.success('Cập nhật hóa đơn thành công')
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(error)
+      return rejectWithValue(handleError(error))
     }
   },
 )
@@ -139,8 +110,7 @@ export const deleteExistingInvoice = createAsyncThunk(
       await dispatch(getInvoice()).unwrap()
       toast.success('Xóa hóa đơn thành công')
     } catch (error) {
-      // const message = handleError(error)
-      const message = error?.response?.data?.messages
+      const message = error?.response?.data?.messages || handleError(error)
       return rejectWithValue(message)
     }
   },
@@ -148,15 +118,13 @@ export const deleteExistingInvoice = createAsyncThunk(
 
 export const changeInvoiceStatus = createAsyncThunk(
   'invoice/status',
-  async (statusData, { rejectWithValue, dispatch }) => {
+  async ({ id, status, filters }, { rejectWithValue, dispatch }) => {
     try {
-      const { id, status } = statusData
       await invoiceApi.updateInvoiceStatus(id, status)
-      await dispatch(getInvoice()).unwrap()
+      await dispatch(getInvoice(filters)).unwrap()
       toast.success('Cập nhật trạng thái hóa đơn thành công')
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(message)
+      return rejectWithValue(handleError(error))
     }
   },
 )
@@ -168,10 +136,21 @@ export const changeShippingStatus = createAsyncThunk(
       const { id, status, deliveredAt, orderId } = data
       await invoiceApi.updateShippingStatus(id, { status, deliveredAt })
       await dispatch(getInvoiceDetails(orderId)).unwrap()
-      toast.success('Cập nhật trạng thái hóa đơn thành công')
+      toast.success('Cập nhật trạng thái vận chuyển thành công')
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(message)
+      return rejectWithValue(handleError(error))
+    }
+  },
+)
+
+export const getSalesSummary = createAsyncThunk(
+  'invoice/sales/summary',
+  async (filters, { rejectWithValue }) => {
+    try {
+      const data = await invoiceApi.getSalesSummary(filters)
+      return data
+    } catch (error) {
+      return rejectWithValue(handleError(error))
     }
   },
 )
@@ -179,6 +158,7 @@ export const changeShippingStatus = createAsyncThunk(
 const initialState = {
   invoice: {},
   invoices: [],
+  summary: [],
   loading: false,
   error: null,
 }
@@ -189,18 +169,6 @@ export const invoiceSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(createNewInvoice.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(createNewInvoice.fulfilled, (state) => {
-        state.loading = false
-      })
-      .addCase(createNewInvoice.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
-        toast.error(state.error)
-      })
       .addCase(getInvoice.pending, (state) => {
         state.loading = true
         state.error = null
@@ -227,17 +195,16 @@ export const invoiceSlice = createSlice({
         state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
-      .addCase(deleteExistingInvoice.pending, (state) => {
+      .addCase(createNewInvoice.pending, (state) => {
         state.loading = true
         state.error = null
       })
-      .addCase(deleteExistingInvoice.fulfilled, (state) => {
+      .addCase(createNewInvoice.fulfilled, (state) => {
         state.loading = false
       })
-      .addCase(deleteExistingInvoice.rejected, (state, action) => {
+      .addCase(createNewInvoice.rejected, (state, action) => {
         state.loading = false
-        state.error =
-          action.payload?.message || action.payload || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
       .addCase(updateExistingInvoice.pending, (state) => {
@@ -250,6 +217,18 @@ export const invoiceSlice = createSlice({
       .addCase(updateExistingInvoice.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload?.message || 'Lỗi không xác định'
+        toast.error(state.error)
+      })
+      .addCase(deleteExistingInvoice.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(deleteExistingInvoice.fulfilled, (state) => {
+        state.loading = false
+      })
+      .addCase(deleteExistingInvoice.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload?.message || action.payload || 'Lỗi không xác định'
         toast.error(state.error)
       })
       .addCase(changeInvoiceStatus.pending, (state) => {
@@ -272,6 +251,19 @@ export const invoiceSlice = createSlice({
         state.loading = false
       })
       .addCase(changeShippingStatus.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload?.message || 'Lỗi không xác định'
+        toast.error(state.error)
+      })
+      .addCase(getSalesSummary.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(getSalesSummary.fulfilled, (state, action) => {
+        state.loading = false
+        state.summary = action.payload || []
+      })
+      .addCase(getSalesSummary.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)

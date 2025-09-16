@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Can from '@/utils/can'
 import AdminReport from './components/AdminReport'
+import UserReport from './components/UserReport'
 import { Layout, LayoutBody } from '@/components/custom/Layout'
 import { endOfMonth, format, startOfMonth } from 'date-fns'
 import { useForm } from 'react-hook-form'
@@ -55,6 +56,7 @@ const DashboardPage = () => {
         {/* <Can permission={['GET_REPORT']}> */}
         <AdminReport fromDate={filters.fromDate} toDate={filters.toDate} />
         {/* </Can> */}
+        <UserReport fromDate={filters.fromDate} toDate={filters.toDate} />
       </LayoutBody>
     </Layout>
   )

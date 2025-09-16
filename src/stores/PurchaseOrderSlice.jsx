@@ -55,6 +55,7 @@ const purchaseOrderApi = {
   getPurchaseSummary: async (filters) => {
     try {
       const params = {}
+      params.type = 'customer_orders'
       if (filters?.dateRange?.from) params.fromDate = filters.dateRange.from
       if (filters?.dateRange?.to) params.toDate = filters.dateRange.to
       if (filters?.status) params.status = filters.status

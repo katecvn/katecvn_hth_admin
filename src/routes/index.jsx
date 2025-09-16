@@ -33,6 +33,7 @@ import SpecificationPage from '@/views/admin/specification/SpecificationPage'
 import ProductAttributePage from '@/views/admin/product_attribute/ProductAttributePage'
 import CustomerGroupProductDiscountPage from '@/views/admin/customer_group_product_discounts/CustomerProductDiscountPage'
 import PurchaseOrderReportPage from '@/views/admin/purchase_order/PurchaseOrderReportPage'
+import InvoiceReportPage from '@/views/admin/invoice/InvoiceReportPage'
 
 const routes = [
   {
@@ -163,6 +164,11 @@ const routes = [
   {
     path: '/invoice',
     element: InvoicePage,
+    layout: AdminLayout,
+  },
+  {
+    path: '/sales-report',
+    element: InvoiceReportPage,
     layout: AdminLayout,
   },
   {

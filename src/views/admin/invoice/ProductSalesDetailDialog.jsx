@@ -10,24 +10,20 @@ import { DataTable } from '@/components/DataTable'
 import { Button } from '@/components/ui/button'
 import { Eye } from 'lucide-react'
 import { dateFormat } from '@/utils/date-format'
-import { getPurchaseOrderDetail } from '@/stores/PurchaseOrderSlice'
-import PurchaseOrderSimpleDialog from './PurchaseOrderSimpleDialog'
+import { getInvoiceDetails } from '@/stores/InvoiceSlice'
+import InvoiceSimpleDialog from './InvoiceSimpleDialog'
 
-const ProductPurchaseDetailDialog = ({ open, onOpenChange, product }) => {
+const ProductSalesDetailDialog = ({ open, onOpenChange, product }) => {
   const dispatch = useDispatch()
-  const orderDetail = useSelector((s) => s.purchaseOrder.order)
-  const loading = useSelector((s) => s.purchaseOrder.loading)
-
+  const orderDetail = useSelector((s) => s.invoice.invoice)
+  const loading = useSelector((s) => s.invoice.loading)
   const [showMini, setShowMini] = useState(false)
 
   const formatCurrency = (amount) =>
-    new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(amount || 0)
+    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0)
 
   const handleOpenMiniOrder = async (orderId) => {
-    await dispatch(getPurchaseOrderDetail(orderId)).unwrap()
+    await dispatch(getInvoiceDetails(orderId)).unwrap()
     setShowMini(true)
   }
 
@@ -35,23 +31,11 @@ const ProductPurchaseDetailDialog = ({ open, onOpenChange, product }) => {
 
   const columns = [
     { accessorKey: 'idx', header: 'STT', cell: ({ row }) => row.index + 1 },
-    {
-      accessorKey: 'createdAt',
-      header: 'Ngày',
-      cell: ({ row }) => dateFormat(row.original.createdAt),
-    },
+    { accessorKey: 'createdAt', header: 'Ngày', cell: ({ row }) => dateFormat(row.original.createdAt) },
     { accessorKey: 'code', header: 'Mã đơn hàng' },
     { accessorKey: 'quantity', header: 'Số lượng' },
-    {
-      accessorKey: 'salePrice',
-      header: 'Đơn giá',
-      cell: ({ row }) => formatCurrency(row.original.salePrice),
-    },
-    {
-      accessorKey: 'totalPrice',
-      header: 'Thành tiền',
-      cell: ({ row }) => formatCurrency(row.original.totalPrice),
-    },
+    { accessorKey: 'salePrice', header: 'Đơn giá', cell: ({ row }) => formatCurrency(row.original.salePrice) },
+    { accessorKey: 'totalPrice', header: 'Thành tiền', cell: ({ row }) => formatCurrency(row.original.totalPrice) },
     {
       id: 'actions',
       header: 'Thao tác',
@@ -73,8 +57,7 @@ const ProductPurchaseDetailDialog = ({ open, onOpenChange, product }) => {
       <DialogContent className="max-w-5xl">
         <DialogHeader>
           <DialogTitle>
-            Sản phẩm: {product?.productName} ({product?.productSku}) — Tổng số lượng:{' '}
-            {product?.totalQuantity}
+            Sản phẩm: {product?.productName} ({product?.productSku}) — Tổng số lượng: {product?.totalQuantity}
           </DialogTitle>
         </DialogHeader>
 
@@ -91,7 +74,7 @@ const ProductPurchaseDetailDialog = ({ open, onOpenChange, product }) => {
         </div>
 
         {showMini && orderDetail && (
-          <PurchaseOrderSimpleDialog
+          <InvoiceSimpleDialog
             open={showMini}
             onOpenChange={setShowMini}
             order={orderDetail}
@@ -102,4 +85,4 @@ const ProductPurchaseDetailDialog = ({ open, onOpenChange, product }) => {
   )
 }
 
-export default ProductPurchaseDetailDialog
+export default ProductSalesDetailDialog
