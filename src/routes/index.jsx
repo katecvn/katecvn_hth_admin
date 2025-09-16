@@ -31,8 +31,8 @@ import PurchaseOrderPage from '@/views/admin/purchase_order/PurchaseOrderPage'
 import SpecificationGroupPage from '@/views/admin/specification_group/SpecificationGroupPage'
 import SpecificationPage from '@/views/admin/specification/SpecificationPage'
 import ProductAttributePage from '@/views/admin/product_attribute/ProductAttributePage'
-import VariantPage from '@/views/admin/variant/VariantPage'
 import CustomerGroupProductDiscountPage from '@/views/admin/customer_group_product_discounts/CustomerProductDiscountPage'
+import PurchaseOrderReportPage from '@/views/admin/purchase_order/PurchaseOrderReportPage'
 
 const routes = [
   {
@@ -116,11 +116,6 @@ const routes = [
     layout: AdminLayout,
   },
   {
-    path: '/product-variant',
-    element: VariantPage,
-    layout: AdminLayout,
-  },
-  {
     path: '/product-attribute',
     element: ProductAttributePage,
     layout: AdminLayout,
@@ -158,6 +153,11 @@ const routes = [
   {
     path: '/purchase-order',
     element: PurchaseOrderPage,
+    layout: AdminLayout,
+  },
+  {
+    path: '/purchase-order-report',
+    element: PurchaseOrderReportPage,
     layout: AdminLayout,
   },
   {

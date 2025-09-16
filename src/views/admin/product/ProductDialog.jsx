@@ -355,35 +355,17 @@ const ProductDialog = ({
 
   const onSubmit = async (data) => {
     try {
-      let variantDataToSubmit = variants
-        .filter((variant) => variantKeys.includes(getVariantKey(variant)))
-        .map((variant) => {
-          const key = getVariantKey(variant)
-          return {
-            attributeValues: variant,
-            ...variantDetails[key],
-          }
-        })
-
-      // Nếu self variant (sản phẩm gốc) còn giữ thì submit thêm
-      if (variantKeys.includes('self') && variantDetails['self']) {
-        variantDataToSubmit = [
-          {
-            attributeValues: [],
-            ...variantDetails['self'],
-            sku: variantDetails['self']?.sku || data.sku,
-            salePrice: parseInt(
-              variantDetails['self']?.salePrice || data.salePrice,
-            ),
-            originalPrice: parseInt(
-              variantDetails['self']?.originalPrice || data.originalPrice,
-            ),
-            stock: parseInt(variantDetails['self']?.stock || data.stock),
-            status: variantDetails['self']?.status || 'active',
-            imageUrl: variantDetails['self']?.imageUrl || '',
-          },
-          ...variantDataToSubmit,
-        ]
+      // luôn ép payload có 1 biến thể gốc
+      const selfVariant = {
+        sku: data.sku,
+        salePrice: parseInt(data.salePrice),
+        originalPrice: parseInt(data.originalPrice),
+        stock: parseInt(data.stock) || 0,
+        unit: data.unit,
+        status: 'active',
+        imageUrl: data.imagesUrl?.[0] || '',
+        position: 0,
+        attributeValues: [], // ✅ thêm rỗng để tránh lỗi validate
       }
 
       const specificationValues = selectedSpecIds
@@ -395,15 +377,15 @@ const ProductDialog = ({
 
       const payload = {
         ...data,
-        variants: variantDataToSubmit,
+        variants: [selfVariant], // chỉ 1 biến thể gốc
         categoryId: parseInt(data.categoryId),
         brandId: parseInt(data.brandId),
-        productGroupId: parseInt(data.productGroupId)
+        productGroupId: data.productGroupId
           ? parseInt(data.productGroupId)
           : null,
         salePrice: parseInt(data.salePrice),
         originalPrice: parseInt(data.originalPrice),
-        stock: parseInt(data.stock) || '0',
+        stock: parseInt(data.stock) || 0,
         syncToBCCU: parseInt(data.syncToBCCU),
         isFeatured: parseInt(data.isFeatured),
         optionMappings: data.optionMappings
@@ -412,7 +394,7 @@ const ProductDialog = ({
             ...item,
             optionId: item.optionId,
           })),
-        specificationValues: specificationValues,
+        specificationValues,
       }
 
       if (isEditing) {
@@ -422,6 +404,7 @@ const ProductDialog = ({
       } else {
         await dispatch(createProduct(payload)).unwrap()
       }
+
       form.reset()
       setEditorContent('')
       onOpenChange?.(false)

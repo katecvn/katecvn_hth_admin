@@ -1,4 +1,3 @@
-// src/views/admin/purchase_order/PurchaseOrderPage.jsx
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Layout, LayoutBody } from '@/components/custom/Layout'
@@ -6,7 +5,7 @@ import { DataTable } from '@/components/DataTable'
 import { dateFormat } from '@/utils/date-format'
 import Can from '@/utils/can'
 import { Button } from '@/components/ui/button'
-import { Eye, Trash } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import {
   getPurchaseOrders,
   getPurchaseOrderDetail,
@@ -14,6 +13,14 @@ import {
 } from '@/stores/PurchaseOrderSlice'
 import PurchaseOrderDetailDialog from './PurchaseOrderDetailDialog'
 import { ConfirmDialog } from '@/components/ComfirmDialog'
+import { DateRange } from '@/components/custom/DateRange'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 const PurchaseOrderPage = () => {
   const dispatch = useDispatch()
@@ -23,11 +30,16 @@ const PurchaseOrderPage = () => {
   const [showDetail, setShowDetail] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [itemChoice, setItemChoice] = useState({})
+  const [filters, setFilters] = useState({
+    status: '',
+    shippingStatus: '',
+    dateRange: null,
+  })
 
   useEffect(() => {
     document.title = 'Đơn mua'
-    dispatch(getPurchaseOrders())
-  }, [dispatch])
+    dispatch(getPurchaseOrders(filters))
+  }, [dispatch, filters])
 
   const formatCurrency = (amount) =>
     new Intl.NumberFormat('vi-VN', {
@@ -154,7 +166,53 @@ const PurchaseOrderPage = () => {
     },
   ]
 
-  const toolbar = [{ children: <Can permission="order_customer_view" /> }]
+  const toolbar = [
+    {
+      children: (
+        <div className="flex gap-2">
+          <Select
+            value={filters.status || undefined}
+            onValueChange={(val) =>
+              setFilters((f) => ({ ...f, status: val || '' }))
+            }
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Trạng thái đơn" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pending">Chờ xác nhận</SelectItem>
+              <SelectItem value="accepted">Đã xác nhận</SelectItem>
+              <SelectItem value="rejected">Đã từ chối</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={filters.shippingStatus || undefined}
+            onValueChange={(val) =>
+              setFilters((f) => ({ ...f, shippingStatus: val || '' }))
+            }
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Trạng thái giao hàng" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pending">Chờ xác nhận</SelectItem>
+              <SelectItem value="in_transit">Đang vận chuyển</SelectItem>
+              <SelectItem value="delivered">Đã giao hàng</SelectItem>
+              <SelectItem value="failed">Giao thất bại</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <DateRange
+            onChange={(range) =>
+              setFilters((f) => ({ ...f, dateRange: range }))
+            }
+          />
+        </div>
+      ),
+    },
+    { children: <Can permission="order_customer_view" /> },
+  ]
 
   return (
     <Layout>

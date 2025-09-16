@@ -28,6 +28,7 @@ import {
   IconList,
   IconUsersGroup,
   IconBinaryTree2,
+  IconChartBar,
 } from '@tabler/icons-react'
 
 export const sideLinks = [
@@ -39,8 +40,19 @@ export const sideLinks = [
   {
     title: 'Đơn mua',
     href: '/purchase-order',
-    // permission: 'order_customer_view',
     icon: <IconShoppingCartDollar size={18} />,
+    sub: [
+      {
+        title: 'Danh sách đơn mua',
+        href: '/purchase-order',
+        icon: <IconShoppingCartDollar size={18} />,
+      },
+      {
+        title: 'Thống kê đơn mua',
+        href: '/purchase-order-report',
+        icon: <IconChartBar size={18} />,
+      },
+    ],
   },
   {
     title: 'Đơn hàng',
@@ -75,12 +87,6 @@ export const sideLinks = [
         title: 'Sản phẩm',
         href: '/product',
         icon: <IconBox size={18} />,
-        permission: 'product_view',
-      },
-      {
-        title: 'Biến thể',
-        href: '/product-variant',
-        icon: <IconBinaryTree2 size={18} />,
         permission: 'product_view',
       },
       {
