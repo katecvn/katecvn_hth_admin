@@ -38,7 +38,11 @@ const PurchaseOrderPage = () => {
 
   useEffect(() => {
     document.title = 'Đơn mua'
-    dispatch(getPurchaseOrders(filters))
+    if (filters.dateRange && filters.dateRange.from && filters.dateRange.to) {
+      dispatch(getPurchaseOrders(filters))
+    } else if (!filters.dateRange) {
+      dispatch(getPurchaseOrders(filters))
+    }
   }, [dispatch, filters])
 
   const formatCurrency = (amount) =>
@@ -171,15 +175,19 @@ const PurchaseOrderPage = () => {
       children: (
         <div className="flex gap-2">
           <Select
-            value={filters.status || undefined}
+            value={filters.status || '__none__'}
             onValueChange={(val) =>
-              setFilters((f) => ({ ...f, status: val || '' }))
+              setFilters((f) => ({
+                ...f,
+                status: val === '__none__' ? '' : val,
+              }))
             }
           >
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Trạng thái đơn" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__none__">Trạng thái đơn</SelectItem>
               <SelectItem value="pending">Chờ xác nhận</SelectItem>
               <SelectItem value="accepted">Đã xác nhận</SelectItem>
               <SelectItem value="rejected">Đã từ chối</SelectItem>
@@ -187,15 +195,19 @@ const PurchaseOrderPage = () => {
           </Select>
 
           <Select
-            value={filters.shippingStatus || undefined}
+            value={filters.shippingStatus || '__none__'}
             onValueChange={(val) =>
-              setFilters((f) => ({ ...f, shippingStatus: val || '' }))
+              setFilters((f) => ({
+                ...f,
+                shippingStatus: val === '__none__' ? '' : val,
+              }))
             }
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Trạng thái giao hàng" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__none__">Trạng thái giao hàng</SelectItem>
               <SelectItem value="pending">Chờ xác nhận</SelectItem>
               <SelectItem value="in_transit">Đang vận chuyển</SelectItem>
               <SelectItem value="delivered">Đã giao hàng</SelectItem>
@@ -205,7 +217,10 @@ const PurchaseOrderPage = () => {
 
           <DateRange
             onChange={(range) =>
-              setFilters((f) => ({ ...f, dateRange: range }))
+              setFilters((f) => ({
+                ...f,
+                dateRange: range?.from && range?.to ? range : null,
+              }))
             }
           />
         </div>

@@ -48,7 +48,7 @@ export const sideLinks = [
         icon: <IconShoppingCartDollar size={18} />,
       },
       {
-        title: 'Thống kê đơn mua',
+        title: 'Tổng hợp mua hàng',
         href: '/purchase-order-report',
         icon: <IconChartBar size={18} />,
       },

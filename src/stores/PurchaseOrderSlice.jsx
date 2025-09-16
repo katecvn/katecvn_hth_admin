@@ -4,16 +4,21 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { toast } from 'sonner'
 
 const purchaseOrderApi = {
-  getOrders: async () => {
+  getOrders: async (filters) => {
     try {
-      const response = await api.get('/order/shows/customer')
+      const params = {}
+      if (filters?.status) params.status = filters.status
+      if (filters?.shippingStatus)
+        params.shippingStatus = filters.shippingStatus
+      if (filters?.dateRange?.from) params.fromDate = filters.dateRange.from
+      if (filters?.dateRange?.to) params.toDate = filters.dateRange.to
+      const response = await api.get('/order/shows/customer', { params })
       const { data } = response.data
-      return data || { orders: [] }
+      return data?.orders || []
     } catch (error) {
       throw error
     }
   },
-
   getOrderDetail: async (id) => {
     try {
       const response = await api.get(`/order/${id}`)
@@ -23,7 +28,6 @@ const purchaseOrderApi = {
       throw error
     }
   },
-
   updateOrderStatus: async (id, status) => {
     try {
       const response = await api.put(`/order/update-status/${id}`, { status })
@@ -32,7 +36,6 @@ const purchaseOrderApi = {
       throw error
     }
   },
-
   updateShippingStatus: async (id, data) => {
     try {
       const response = await api.put(`/shipping/update-status/${id}`, data)
@@ -41,7 +44,6 @@ const purchaseOrderApi = {
       throw error
     }
   },
-
   deleteOrder: async (id) => {
     try {
       const response = await api.delete(`/order/destroy/${id}`)
@@ -50,14 +52,29 @@ const purchaseOrderApi = {
       throw error
     }
   },
+  getPurchaseSummary: async (filters) => {
+    try {
+      const params = {}
+      if (filters?.dateRange?.from) params.fromDate = filters.dateRange.from
+      if (filters?.dateRange?.to) params.toDate = filters.dateRange.to
+      if (filters?.status) params.status = filters.status
+      if (filters?.shippingStatus)
+        params.shippingStatus = filters.shippingStatus
+      const response = await api.get('/order-purchase-summary', { params })
+      const { data } = response.data
+      return data || []
+    } catch (error) {
+      throw error
+    }
+  },
 }
 
 export const getPurchaseOrders = createAsyncThunk(
-  'purchaseOrder',
-  async (_, { rejectWithValue }) => {
+  'purchaseOrder/list',
+  async (filters, { rejectWithValue }) => {
     try {
-      const data = await purchaseOrderApi.getOrders()
-      return data.orders || []
+      const data = await purchaseOrderApi.getOrders(filters)
+      return data
     } catch (error) {
       const message = handleError(error)
       return rejectWithValue(message)
@@ -80,11 +97,10 @@ export const getPurchaseOrderDetail = createAsyncThunk(
 
 export const changePurchaseOrderStatus = createAsyncThunk(
   'purchaseOrder/status',
-  async (statusData, { rejectWithValue, dispatch }) => {
+  async ({ id, status, filters }, { rejectWithValue, dispatch }) => {
     try {
-      const { id, status } = statusData
       await purchaseOrderApi.updateOrderStatus(id, status)
-      await dispatch(getPurchaseOrders()).unwrap()
+      await dispatch(getPurchaseOrders(filters)).unwrap()
       toast.success('Cập nhật trạng thái đơn mua thành công')
     } catch (error) {
       const message = handleError(error)
@@ -110,10 +126,10 @@ export const changePurchaseShippingStatus = createAsyncThunk(
 
 export const deleteExistingPurchaseOrder = createAsyncThunk(
   'purchaseOrder/delete',
-  async (id, { rejectWithValue, dispatch }) => {
+  async ({ id, filters }, { rejectWithValue, dispatch }) => {
     try {
       await purchaseOrderApi.deleteOrder(id)
-      await dispatch(getPurchaseOrders()).unwrap()
+      await dispatch(getPurchaseOrders(filters)).unwrap()
       toast.success('Xóa đơn mua thành công')
     } catch (error) {
       const message = error?.response?.data?.messages || handleError(error)
@@ -122,9 +138,23 @@ export const deleteExistingPurchaseOrder = createAsyncThunk(
   },
 )
 
+export const getPurchaseSummary = createAsyncThunk(
+  'purchaseOrder/summary',
+  async (filters, { rejectWithValue }) => {
+    try {
+      const data = await purchaseOrderApi.getPurchaseSummary(filters)
+      return data
+    } catch (error) {
+      const message = handleError(error)
+      return rejectWithValue(message)
+    }
+  },
+)
+
 const initialState = {
   order: {},
   orders: [],
+  summary: [],
   loading: false,
   error: null,
 }
@@ -190,6 +220,19 @@ export const purchaseOrderSlice = createSlice({
         state.loading = false
       })
       .addCase(deleteExistingPurchaseOrder.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+        toast.error(state.error)
+      })
+      .addCase(getPurchaseSummary.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(getPurchaseSummary.fulfilled, (state, action) => {
+        state.loading = false
+        state.summary = action.payload || []
+      })
+      .addCase(getPurchaseSummary.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload
         toast.error(state.error)
