@@ -35,6 +35,47 @@ const PurchaseOrderPage = () => {
       currency: 'VND',
     }).format(amount || 0)
 
+  const statusMap = {
+    draft: { label: 'Nháp', className: 'bg-gray-100 text-gray-800' },
+    pending: {
+      label: 'Chờ xác nhận',
+      className: 'bg-yellow-100 text-yellow-800',
+    },
+    accepted: {
+      label: 'Đã xác nhận',
+      className: 'bg-green-100 text-green-800',
+    },
+    rejected: { label: 'Đã từ chối', className: 'bg-red-100 text-red-800' },
+  }
+
+  const shippingStatusMap = {
+    pending: {
+      label: 'Chờ xác nhận',
+      className: 'bg-yellow-100 text-yellow-800',
+    },
+    in_transit: {
+      label: 'Đang vận chuyển',
+      className: 'bg-orange-200 text-orange-800',
+    },
+    delivered: {
+      label: 'Đã giao hàng',
+      className: 'bg-green-100 text-green-800',
+    },
+    failed: { label: 'Giao thất bại', className: 'bg-red-100 text-red-800' },
+  }
+
+  const getStatusInfo = (status) =>
+    statusMap[status] || {
+      label: status,
+      className: 'bg-gray-100 text-gray-800',
+    }
+
+  const getShippingStatusInfo = (status) =>
+    shippingStatusMap[status] || {
+      label: status,
+      className: 'bg-gray-100 text-gray-800',
+    }
+
   const handleShowDetail = async (id) => {
     await dispatch(getPurchaseOrderDetail(id)).unwrap()
     setShowDetail(true)
@@ -52,19 +93,40 @@ const PurchaseOrderPage = () => {
       cell: ({ row }) => row.original.code || `PM${row.original.id}`,
     },
     {
-      accessorKey: 'supplier',
-      header: 'Nhà cung cấp',
-      cell: ({ row }) => row.original.supplier?.name,
-    },
-    {
       accessorKey: 'totalAmount',
       header: 'Tổng tiền',
       cell: ({ row }) => formatCurrency(row.original.totalAmount),
     },
     {
       accessorKey: 'status',
-      header: 'Trạng thái',
-      cell: ({ row }) => row.original.status,
+      header: 'Trạng thái đơn',
+      cell: ({ row }) => {
+        const info = getStatusInfo(row.original.status)
+        return (
+          <span
+            className={`rounded px-2 py-1 text-xs font-medium ${info.className}`}
+          >
+            {info.label}
+          </span>
+        )
+      },
+    },
+    {
+      accessorKey: 'shippingStatus',
+      header: 'Trạng thái giao hàng',
+      cell: ({ row }) => {
+        const shipping = row.original.shippings?.[0]
+        if (!shipping)
+          return <span className="text-sm text-muted-foreground">Chưa có</span>
+        const info = getShippingStatusInfo(shipping.shippingStatus)
+        return (
+          <span
+            className={`rounded px-2 py-1 text-xs font-medium ${info.className}`}
+          >
+            {info.label}
+          </span>
+        )
+      },
     },
     {
       accessorKey: 'createdAt',
@@ -86,17 +148,6 @@ const PurchaseOrderPage = () => {
             }}
           >
             <Eye className="h-5 w-5" />
-          </Button>
-          <Button
-            className="text-red-500"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setItemChoice(row.original)
-              setShowDelete(true)
-            }}
-          >
-            <Trash className="h-5 w-5" />
           </Button>
         </div>
       ),
