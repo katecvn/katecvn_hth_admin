@@ -34,6 +34,7 @@ import ProductAttributePage from '@/views/admin/product_attribute/ProductAttribu
 import CustomerGroupProductDiscountPage from '@/views/admin/customer_group_product_discounts/CustomerProductDiscountPage'
 import PurchaseOrderReportPage from '@/views/admin/purchase_order/PurchaseOrderReportPage'
 import InvoiceReportPage from '@/views/admin/invoice/InvoiceReportPage'
+import RewardPointRulePage from '@/views/admin/reward_point_rules/RewardPointRulePage'
 
 const routes = [
   {
@@ -174,6 +175,11 @@ const routes = [
   {
     path: '/customer-group-discount',
     element: CustomerGroupProductDiscountPage,
+    layout: AdminLayout,
+  },
+  {
+    path: '/reward-point-rules',
+    element: RewardPointRulePage,
     layout: AdminLayout,
   },
   {

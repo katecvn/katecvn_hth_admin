@@ -212,6 +212,12 @@ export const sideLinks = [
     icon: <IconSettings size={18} />,
     sub: [
       {
+        title: 'Cài đặt điểm thưởng',
+        href: '/reward-point-rules',
+        icon: <IconStar size={18} />,
+        permission: 'reward_rule_view',
+      },
+      {
         title: 'Menu',
         href: '/navigation',
         permission: 'setting_menu',
