@@ -35,6 +35,7 @@ import CustomerGroupProductDiscountPage from '@/views/admin/customer_group_produ
 import PurchaseOrderReportPage from '@/views/admin/purchase_order/PurchaseOrderReportPage'
 import InvoiceReportPage from '@/views/admin/invoice/InvoiceReportPage'
 import RewardPointRulePage from '@/views/admin/reward_point_rules/RewardPointRulePage'
+import RewardPointHistoryPage from '@/views/admin/reward_point_histories/RewardPointHistoryPage'
 
 const routes = [
   {
@@ -110,6 +111,11 @@ const routes = [
   {
     path: '/contact',
     element: ContactPage,
+    layout: AdminLayout,
+  },
+  {
+    path: '/reward-point-histories',
+    element: RewardPointHistoryPage,
     layout: AdminLayout,
   },
   {

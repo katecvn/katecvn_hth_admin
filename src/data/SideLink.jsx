@@ -206,6 +206,12 @@ export const sideLinks = [
     permission: 'contact_view',
   },
   {
+    title: 'Lịch sử điểm thưởng',
+    href: '/reward-point-histories',
+    icon: <IconStar size={18} />,
+    permission: 'reward_history_view',
+  },
+  {
     title: 'Cài đặt',
     href: '/settings',
     permission: 'setting',

@@ -23,8 +23,10 @@ import { Input } from '@/components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useDispatch, useSelector } from 'react-redux'
 import {
-  createRewardPointRuleSchema,
-  updateRewardPointRuleSchema,
+  createOrderValueRuleSchema,
+  createTimeSlotRuleSchema,
+  updateOrderValueRuleSchema,
+  updateTimeSlotRuleSchema,
 } from './SchemaRewardPointRule'
 import {
   createRewardPointRule,
@@ -41,9 +43,17 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 
+const fmtMoney = (val) =>
+  val !== '' && val !== null && val !== undefined
+    ? `${Number(val).toLocaleString('vi-VN')}đ`
+    : ''
+
+const stripNonDigits = (s) => (s || '').replace(/[^\d]/g, '')
+
 const RewardPointRuleDialog = ({
   open,
   onOpenChange,
+  fixedType,
   initialData = null,
   showTrigger = true,
 }) => {
@@ -52,61 +62,87 @@ const RewardPointRuleDialog = ({
   const [confirmOpen, setConfirmOpen] = useState(false)
   const isEditing = !!initialData
 
+  const schema = useMemo(() => {
+    if (fixedType === 'order_value')
+      return isEditing ? updateOrderValueRuleSchema : createOrderValueRuleSchema
+    return isEditing ? updateTimeSlotRuleSchema : createTimeSlotRuleSchema
+  }, [fixedType, isEditing])
+
   const form = useForm({
-    resolver: zodResolver(
-      isEditing ? updateRewardPointRuleSchema : createRewardPointRuleSchema,
-    ),
-    defaultValues: {
-      type: initialData?.type || 'order_value',
-      minOrderValue:
-        typeof initialData?.minOrderValue === 'number'
-          ? initialData?.minOrderValue
-          : '',
-      beforeTime: initialData?.beforeTime || '',
-      points: initialData?.points ?? 10,
-      status: initialData?.status || 'active',
-    },
+    resolver: zodResolver(schema),
+    defaultValues:
+      fixedType === 'order_value'
+        ? {
+            type: 'order_value',
+            minOrderValue: initialData?.minOrderValue ?? '',
+            points: initialData?.points ?? 10,
+            status: initialData?.status || 'active',
+          }
+        : {
+            type: 'time_slot',
+            beforeTime: initialData?.beforeTime || '',
+            points: initialData?.points ?? 10,
+            status: initialData?.status || 'active',
+          },
   })
 
-  const watchType = form.watch('type')
-  const isOrderValue = watchType === 'order_value'
-  const isTimeSlot = watchType === 'time_slot'
+  const [displayMinOrder, setDisplayMinOrder] = useState(
+    fixedType === 'order_value'
+      ? initialData?.minOrderValue
+        ? fmtMoney(initialData.minOrderValue)
+        : ''
+      : '',
+  )
 
   useEffect(() => {
     if (initialData) {
-      form.reset({
-        type: initialData?.type || 'order_value',
-        minOrderValue:
-          typeof initialData?.minOrderValue === 'number'
-            ? initialData?.minOrderValue
-            : '',
-        beforeTime: initialData?.beforeTime || '',
-        points: initialData?.points ?? 10,
-        status: initialData?.status || 'active',
-      })
-    }
-  }, [initialData, form])
-
-  const onSubmit = async (raw) => {
-    try {
-      const data = {
-        ...raw,
-        minOrderValue:
-          raw.minOrderValue === '' || raw.minOrderValue === undefined
-            ? null
-            : Number(raw.minOrderValue),
-        beforeTime: raw.beforeTime || null,
-        points: Number(raw.points),
+      if (fixedType === 'order_value') {
+        form.reset({
+          type: 'order_value',
+          minOrderValue: initialData?.minOrderValue ?? '',
+          points: initialData?.points ?? 10,
+          status: initialData?.status || 'active',
+        })
+        setDisplayMinOrder(
+          initialData?.minOrderValue ? fmtMoney(initialData.minOrderValue) : '',
+        )
+      } else {
+        form.reset({
+          type: 'time_slot',
+          beforeTime: initialData?.beforeTime || '',
+          points: initialData?.points ?? 10,
+          status: initialData?.status || 'active',
+        })
       }
+    }
+  }, [initialData, fixedType, form])
+
+  const onSubmit = async (values) => {
+    try {
+      const payload =
+        fixedType === 'order_value'
+          ? {
+              type: 'order_value',
+              minOrderValue: Number(values.minOrderValue),
+              points: Number(values.points),
+              status: values.status,
+            }
+          : {
+              type: 'time_slot',
+              beforeTime: values.beforeTime,
+              points: Number(values.points),
+              status: values.status,
+            }
 
       if (isEditing) {
         await dispatch(
-          updateRewardPointRule({ id: initialData.id, data }),
+          updateRewardPointRule({ id: initialData.id, data: payload }),
         ).unwrap()
       } else {
-        await dispatch(createRewardPointRule(data)).unwrap()
+        await dispatch(createRewardPointRule(payload)).unwrap()
       }
       form.reset()
+      if (fixedType === 'order_value') setDisplayMinOrder('')
       onOpenChange?.(false)
     } catch (error) {
       const errorMessage =
@@ -128,18 +164,12 @@ const RewardPointRuleDialog = ({
     }
   }
 
-  const title = useMemo(
-    () =>
-      isEditing ? 'Cập nhật quy tắc điểm thưởng' : 'Thêm quy tắc điểm thưởng',
-    [isEditing],
-  )
-  const desc = useMemo(
-    () =>
-      isEditing
-        ? 'Chỉnh sửa thông tin quy tắc điểm thưởng bên dưới'
-        : 'Điền chi tiết để thêm quy tắc điểm thưởng',
-    [isEditing],
-  )
+  const title = isEditing
+    ? 'Cập nhật quy tắc điểm thưởng'
+    : 'Thêm quy tắc điểm thưởng'
+  const desc = isEditing
+    ? 'Chỉnh sửa thông tin quy tắc điểm thưởng bên dưới'
+    : 'Điền chi tiết để thêm quy tắc điểm thưởng'
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -161,68 +191,29 @@ const RewardPointRuleDialog = ({
           <Form {...form}>
             <form
               id="RewardRule-form"
-              onSubmit={async (e) => {
-                if (isEditing) {
-                  e.preventDefault()
-                  if (await form.trigger()) setConfirmOpen(true)
-                } else {
-                  form.handleSubmit(onSubmit)(e)
-                }
-              }}
+              onSubmit={form.handleSubmit((vals) => {
+                if (isEditing) return setConfirmOpen(true)
+                return onSubmit(vals)
+              })}
             >
               <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem className="mb-2 space-y-1">
-                      <FormLabel required>Loại quy tắc</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Chọn loại quy tắc" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectItem value="order_value">
-                              Theo giá trị đơn
-                            </SelectItem>
-                            <SelectItem value="time_slot">
-                              Theo khung giờ
-                            </SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {isOrderValue && (
+                {fixedType === 'order_value' && (
                   <FormField
                     control={form.control}
                     name="minOrderValue"
                     render={({ field }) => (
-                      <FormItem className="mb-2 space-y-1">
-                        <FormLabel required>Ngưỡng giá trị đơn (≥)</FormLabel>
+                      <FormItem className="mb-2 space-y-1 md:col-span-2">
+                        <FormLabel required>Điều kiện</FormLabel>
                         <FormControl>
                           <Input
-                            type="number"
-                            step="1000"
-                            min="0"
-                            placeholder="VD: 5000000"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(
-                                e.target.value === ''
-                                  ? ''
-                                  : Number(e.target.value),
-                              )
-                            }
+                            inputMode="numeric"
+                            placeholder="Giá trị đơn hàng tối thiểu để được cộng điểm (VD: 100000)"
+                            value={displayMinOrder}
+                            onChange={(e) => {
+                              const raw = stripNonDigits(e.target.value)
+                              setDisplayMinOrder(raw ? fmtMoney(raw) : '')
+                              field.onChange(raw || '')
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -231,17 +222,19 @@ const RewardPointRuleDialog = ({
                   />
                 )}
 
-                {isTimeSlot && (
+                {fixedType === 'time_slot' && (
                   <FormField
                     control={form.control}
                     name="beforeTime"
                     render={({ field }) => (
-                      <FormItem className="mb-2 space-y-1">
-                        <FormLabel required>
-                          Trước thời điểm (giờ:phút)
-                        </FormLabel>
+                      <FormItem className="mb-2 space-y-1 md:col-span-2">
+                        <FormLabel required>Điều kiện</FormLabel>
                         <FormControl>
-                          <Input type="time" {...field} />
+                          <Input
+                            type="time"
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -261,10 +254,8 @@ const RewardPointRuleDialog = ({
                           min="1"
                           step="1"
                           placeholder="VD: 10"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
+                          value={field.value ?? ''}
+                          onChange={(e) => field.onChange(e.target.value)}
                         />
                       </FormControl>
                       <FormMessage />

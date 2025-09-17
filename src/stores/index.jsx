@@ -31,6 +31,7 @@ import customerProductDiscountSliceReducer from './customerProductDiscountSlice'
 import customerProductDiscountHisotySliceReducer from './customerProductDiscountHistorySlice'
 import purchaseOrderSliceReducer from './PurchaseOrderSlice'
 import rewardPointRuleSliceReducer from './RewardPointRuleSlice'
+import rewardPointHistoryHisotySliceReducer from './RewardPointHistorySlice'
 
 const persistConfig = { key: 'katec-vn', storage }
 
@@ -67,6 +68,7 @@ export const store = configureStore({
     customerProductDiscountHistory: customerProductDiscountHisotySliceReducer,
     purchaseOrder: purchaseOrderSliceReducer,
     rewardPointRules: rewardPointRuleSliceReducer,
+    rewardPointHistories: rewardPointHistoryHisotySliceReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),
