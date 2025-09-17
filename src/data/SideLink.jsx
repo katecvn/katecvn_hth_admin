@@ -40,6 +40,7 @@ export const sideLinks = [
   {
     title: 'Đơn mua',
     href: '/purchase-order',
+    permission: 'purchase_order_view',
     icon: <IconShoppingCartDollar size={18} />,
     sub: [
       {

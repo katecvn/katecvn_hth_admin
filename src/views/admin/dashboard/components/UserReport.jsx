@@ -27,11 +27,11 @@ const UserReport = ({ fromDate, toDate }) => {
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissionCodes')) || []
     const names = perms.map((p) => p.name)
-    // if (names.includes('purchase_order_view')) {
+    if (names.includes('purchase_order_view')) {
       const dateRange =
         fromDate && toDate ? { dateRange: { from: fromDate, to: toDate } } : {}
       dispatch(getPurchaseOrders({ ...dateRange, status: 'accepted' }))
-    // }
+    }
   }, [dispatch, fromDate, toDate])
 
   const actualTheme = useMemo(() => {
@@ -69,7 +69,7 @@ const UserReport = ({ fromDate, toDate }) => {
   const cntRejected = orders.filter((o) => o.status === 'rejected').length
 
   return (
-//    <Can permission="purchase_order_view">
+   <Can permission="purchase_order_view">
       <div className="space-y-6">
         <h2 className={`mt-6 text-xl font-semibold ${textTitleClass}`}>Thống kê đơn mua</h2>
         <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
@@ -164,7 +164,7 @@ const UserReport = ({ fromDate, toDate }) => {
             </Card>
         </div>
       </div>
-    // </Can>
+    </Can>
   )
 }
 
