@@ -36,6 +36,7 @@ import PurchaseOrderReportPage from '@/views/admin/purchase_order/PurchaseOrderR
 import InvoiceReportPage from '@/views/admin/invoice/InvoiceReportPage'
 import RewardPointRulePage from '@/views/admin/reward_point_rules/RewardPointRulePage'
 import RewardPointHistoryPage from '@/views/admin/reward_point_histories/RewardPointHistoryPage'
+import BillPage from '@/views/admin/bill/BillPage'
 
 const routes = [
   {
@@ -171,6 +172,11 @@ const routes = [
   {
     path: '/invoice',
     element: InvoicePage,
+    layout: AdminLayout,
+  },
+  {
+    path: '/bill',
+    element: BillPage,
     layout: AdminLayout,
   },
   {

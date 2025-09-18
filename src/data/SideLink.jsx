@@ -14,7 +14,6 @@ import {
   IconSettingsPause,
   IconAddressBook,
   IconUser,
-  IconLayoutDistributeHorizontal,
   IconAB2,
   IconBubbleText,
   IconDiscount,
@@ -27,7 +26,6 @@ import {
   IconFileInvoice,
   IconList,
   IconUsersGroup,
-  IconBinaryTree2,
   IconChartBar,
 } from '@tabler/icons-react'
 
@@ -73,17 +71,19 @@ export const sideLinks = [
         icon: <IconChartBar size={18} />,
         permission: 'order_view',
       },
-      {
-        title: 'Đánh giá',
-        href: '/review',
-        icon: <IconStar size={18} />,
-      },
+      { title: 'Đánh giá', href: '/review', icon: <IconStar size={18} /> },
       {
         title: 'Giảm giá',
         href: '/discount',
         icon: <IconDiscount size={18} />,
       },
     ],
+  },
+  {
+    title: 'Hóa đơn',
+    href: '/bill',
+    permission: 'invoice_view',
+    icon: <IconFileInvoice size={18} />,
   },
   {
     title: 'Sản phẩm',
