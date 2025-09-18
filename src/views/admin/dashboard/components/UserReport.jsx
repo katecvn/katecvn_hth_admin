@@ -5,16 +5,22 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getPurchaseOrders } from '@/stores/PurchaseOrderSlice'
+import { getRewardPoints } from '@/stores/authSlice'
 import { useTheme } from '@/components/ThemeProvider'
 import Can from '@/utils/can'
 
 const UserReport = ({ fromDate, toDate }) => {
   const dispatch = useDispatch()
   const orders = useSelector((s) => s.purchaseOrder.orders) || []
-  const loading = useSelector((s) => s.purchaseOrder.loading)
+  const loadingOrders = useSelector((s) => s.purchaseOrder.loading)
+
+  const rewardPoints = useSelector((s) => s.auth.rewardPoints)
+  const loadingAuth = useSelector((s) => s.auth.loading)
+
   const { theme } = useTheme()
   const [systemPrefersDark, setSystemPrefersDark] = useState(
-    window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
+    window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches,
   )
 
   useEffect(() => {
@@ -32,6 +38,9 @@ const UserReport = ({ fromDate, toDate }) => {
         fromDate && toDate ? { dateRange: { from: fromDate, to: toDate } } : {}
       dispatch(getPurchaseOrders({ ...dateRange, status: 'accepted' }))
     }
+
+    // gọi API lấy điểm thưởng
+    dispatch(getRewardPoints())
   }, [dispatch, fromDate, toDate])
 
   const actualTheme = useMemo(() => {
@@ -56,11 +65,15 @@ const UserReport = ({ fromDate, toDate }) => {
     { bg: 'bg-indigo-900', text: 'text-indigo-300' },
   ]
   const themeColors = actualTheme === 'dark' ? darkColors : lightColors
-  const cardHoverClass = actualTheme === 'dark' ? 'hover:bg-opacity-80' : 'hover:bg-opacity-70'
+  const cardHoverClass =
+    actualTheme === 'dark' ? 'hover:bg-opacity-80' : 'hover:bg-opacity-70'
   const textTitleClass = actualTheme === 'dark' ? 'text-white' : 'text-gray-800'
 
   const formatCurrency = (n) =>
-    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n || 0)
+    new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(n || 0)
 
   const totalOrders = orders.length
   const totalAmount = orders.reduce((s, o) => s + Number(o.totalAmount || 0), 0)
@@ -69,99 +82,149 @@ const UserReport = ({ fromDate, toDate }) => {
   const cntRejected = orders.filter((o) => o.status === 'rejected').length
 
   return (
-   <Can permission="purchase_order_view">
+    <Can permission="purchase_order_view">
       <div className="space-y-6">
-        <h2 className={`mt-6 text-xl font-semibold ${textTitleClass}`}>Thống kê đơn mua</h2>
+        <h2 className={`mt-6 text-xl font-semibold ${textTitleClass}`}>
+          Thống kê đơn mua
+        </h2>
+
         <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            <Card className={`${themeColors[0]?.bg} ${cardHoverClass} transition-all duration-200`}>
+          {/* Tổng đơn mua */}
+          <Card
+            className={`${themeColors[0]?.bg} ${cardHoverClass} transition-all duration-200`}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Tổng đơn mua</CardTitle>
-                <div className="h-4 w-4">
+              <CardTitle className="text-sm font-medium">
+                Tổng đơn mua
+              </CardTitle>
+              <div className="h-4 w-4">
                 <IconInvoice className={`h-4 w-4 ${themeColors[0]?.text}`} />
-                </div>
+              </div>
             </CardHeader>
             <Link to="/purchase-order">
-                <CardContent>
-                {loading ? (
-                    <Skeleton className="h-[20px] w-full rounded-md" />
+              <CardContent>
+                {loadingOrders ? (
+                  <Skeleton className="h-[20px] w-full rounded-md" />
                 ) : (
-                    <div className="text-2xl font-bold">{totalOrders}</div>
+                  <div className="text-2xl font-bold">{totalOrders}</div>
                 )}
-                </CardContent>
+              </CardContent>
             </Link>
-            </Card>
+          </Card>
 
-            <Card className={`${themeColors[1]?.bg} ${cardHoverClass} transition-all duration-200`}>
+          {/* Tổng giá trị */}
+          <Card
+            className={`${themeColors[1]?.bg} ${cardHoverClass} transition-all duration-200`}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Tổng giá trị mua</CardTitle>
-                <div className="h-4 w-4">
+              <CardTitle className="text-sm font-medium">
+                Tổng giá trị mua
+              </CardTitle>
+              <div className="h-4 w-4">
                 <IconInvoice className={`h-4 w-4 ${themeColors[1]?.text}`} />
-                </div>
+              </div>
             </CardHeader>
             <Link to="/purchase-order-report">
-                <CardContent>
-                {loading ? (
-                    <Skeleton className="h-[20px] w-full rounded-md" />
+              <CardContent>
+                {loadingOrders ? (
+                  <Skeleton className="h-[20px] w-full rounded-md" />
                 ) : (
-                    <div className="text-2xl font-bold">{formatCurrency(totalAmount)}</div>
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(totalAmount)}
+                  </div>
                 )}
-                </CardContent>
+              </CardContent>
             </Link>
-            </Card>
+          </Card>
 
-            <Card className={`${themeColors[2]?.bg} ${cardHoverClass} transition-all duration-200`}>
+          {/* Chờ xác nhận */}
+          <Card
+            className={`${themeColors[2]?.bg} ${cardHoverClass} transition-all duration-200`}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Chờ xác nhận</CardTitle>
-                <div className="h-4 w-4">
+              <CardTitle className="text-sm font-medium">
+                Chờ xác nhận
+              </CardTitle>
+              <div className="h-4 w-4">
                 <IconInvoice className={`h-4 w-4 ${themeColors[2]?.text}`} />
-                </div>
+              </div>
             </CardHeader>
             <Link to="/purchase-order?status=pending">
-                <CardContent>
-                {loading ? (
-                    <Skeleton className="h-[20px] w-full rounded-md" />
+              <CardContent>
+                {loadingOrders ? (
+                  <Skeleton className="h-[20px] w-full rounded-md" />
                 ) : (
-                    <div className="text-2xl font-bold">{cntPending}</div>
+                  <div className="text-2xl font-bold">{cntPending}</div>
                 )}
-                </CardContent>
+              </CardContent>
             </Link>
-            </Card>
+          </Card>
 
-            <Card className={`${themeColors[3]?.bg} ${cardHoverClass} transition-all duration-200`}>
+          {/* Đã xác nhận */}
+          <Card
+            className={`${themeColors[3]?.bg} ${cardHoverClass} transition-all duration-200`}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Đã xác nhận</CardTitle>
-                <div className="h-4 w-4">
+              <CardTitle className="text-sm font-medium">Đã xác nhận</CardTitle>
+              <div className="h-4 w-4">
                 <IconInvoice className={`h-4 w-4 ${themeColors[3]?.text}`} />
-                </div>
+              </div>
             </CardHeader>
             <Link to="/purchase-order?status=accepted">
-                <CardContent>
-                {loading ? (
-                    <Skeleton className="h-[20px] w-full rounded-md" />
+              <CardContent>
+                {loadingOrders ? (
+                  <Skeleton className="h-[20px] w-full rounded-md" />
                 ) : (
-                    <div className="text-2xl font-bold">{cntAccepted}</div>
+                  <div className="text-2xl font-bold">{cntAccepted}</div>
                 )}
-                </CardContent>
+              </CardContent>
             </Link>
-            </Card>
+          </Card>
 
-            <Card className={`${themeColors[4]?.bg} ${cardHoverClass} transition-all duration-200`}>
+          {/* Đã từ chối */}
+          <Card
+            className={`${themeColors[4]?.bg} ${cardHoverClass} transition-all duration-200`}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Đã từ chối</CardTitle>
-                <div className="h-4 w-4">
+              <CardTitle className="text-sm font-medium">Đã từ chối</CardTitle>
+              <div className="h-4 w-4">
                 <IconInvoice className={`h-4 w-4 ${themeColors[4]?.text}`} />
-                </div>
+              </div>
             </CardHeader>
             <Link to="/purchase-order?status=rejected">
-                <CardContent>
-                {loading ? (
-                    <Skeleton className="h-[20px] w-full rounded-md" />
+              <CardContent>
+                {loadingOrders ? (
+                  <Skeleton className="h-[20px] w-full rounded-md" />
                 ) : (
-                    <div className="text-2xl font-bold">{cntRejected}</div>
+                  <div className="text-2xl font-bold">{cntRejected}</div>
                 )}
-                </CardContent>
+              </CardContent>
             </Link>
-            </Card>
+          </Card>
+        </div>
+
+        {/* Card điểm thưởng dời xuống dưới */}
+        <h2 className={`mt-6 text-xl font-semibold ${textTitleClass}`}>
+          Điểm thưởng
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+          <Card
+            className={`${themeColors[5]?.bg} ${cardHoverClass} transition-all duration-200`}
+          >
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Điểm thưởng</CardTitle>
+              <div className="h-4 w-4">
+                <IconInvoice className={`h-4 w-4 ${themeColors[5]?.text}`} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingAuth ? (
+                <Skeleton className="h-[20px] w-full rounded-md" />
+              ) : (
+                <div className="text-2xl font-bold">{rewardPoints}</div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </Can>
