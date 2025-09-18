@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Layout, LayoutBody } from '@/components/custom/Layout'
 import { DataTable } from '@/components/DataTable'
@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import BulkExportInvoiceFromSelectionDialog from './BulkExportInvoiceFromSelectionDialog'
 
 const PurchaseOrderPage = () => {
   const dispatch = useDispatch()
@@ -35,6 +36,8 @@ const PurchaseOrderPage = () => {
     shippingStatus: '',
     dateRange: null,
   })
+  const [selected, setSelected] = useState(new Set())
+  const [openBulk, setOpenBulk] = useState(false)
 
   useEffect(() => {
     document.title = 'Đơn mua'
@@ -101,7 +104,40 @@ const PurchaseOrderPage = () => {
     await dispatch(deleteExistingPurchaseOrder(id)).unwrap()
   }
 
+  const allChecked = useMemo(
+    () => orders.length > 0 && selected.size === orders.length,
+    [orders, selected],
+  )
+
+  const toggleAll = () => {
+    if (allChecked) setSelected(new Set())
+    else setSelected(new Set(orders.map((i) => String(i.id))))
+  }
+
+  const toggleOne = (id) => {
+    const sid = String(id)
+    const next = new Set(selected)
+    if (next.has(sid)) next.delete(sid)
+    else next.add(sid)
+    setSelected(next)
+  }
+
   const columns = [
+    {
+      id: 'select',
+      header: (
+        <input type="checkbox" checked={allChecked} onChange={toggleAll} />
+      ),
+      cell: ({ row }) => (
+        <input
+          type="checkbox"
+          checked={selected.has(String(row.original.id))}
+          onChange={() => toggleOne(row.original.id)}
+        />
+      ),
+      enableSorting: false,
+      enableColumnFilter: false,
+    },
     { accessorKey: 'id', header: 'STT', cell: ({ row }) => row.index + 1 },
     {
       accessorKey: 'code',
@@ -193,7 +229,6 @@ const PurchaseOrderPage = () => {
               <SelectItem value="rejected">Đã từ chối</SelectItem>
             </SelectContent>
           </Select>
-
           <Select
             value={filters.shippingStatus || '__none__'}
             onValueChange={(val) =>
@@ -214,7 +249,6 @@ const PurchaseOrderPage = () => {
               <SelectItem value="failed">Giao thất bại</SelectItem>
             </SelectContent>
           </Select>
-
           <DateRange
             onChange={(range) =>
               setFilters((f) => ({
@@ -223,6 +257,14 @@ const PurchaseOrderPage = () => {
               }))
             }
           />
+          <Button
+            variant="outline"
+            onClick={() => setOpenBulk(true)}
+            disabled={selected.size === 0}
+            title="Xuất hóa đơn cho các đơn đã chọn"
+          >
+            Xuất hóa đơn ({selected.size})
+          </Button>
         </div>
       ),
     },
@@ -261,11 +303,23 @@ const PurchaseOrderPage = () => {
         <ConfirmDialog
           open={showDelete}
           onOpenChange={setShowDelete}
-          description={`Bạn có chắc muốn xóa đơn mua ${
-            itemChoice.code || `PM${itemChoice.id}`
-          } không?`}
+          description={`Bạn có chắc muốn xóa đơn mua ${itemChoice.code || `PM${itemChoice.id}`} không?`}
           onConfirm={() => handleDelete(itemChoice.id)}
           loading={loading}
+        />
+      )}
+      {openBulk && (
+        <BulkExportInvoiceFromSelectionDialog
+          open={openBulk}
+          onOpenChange={(v) => {
+            setOpenBulk(v)
+            if (!v) setSelected(new Set())
+          }}
+          orders={orders.filter((i) => selected.has(String(i.id)))}
+          onCreated={() => {
+            setSelected(new Set())
+            dispatch(getPurchaseOrders(filters))
+          }}
         />
       )}
     </Layout>
