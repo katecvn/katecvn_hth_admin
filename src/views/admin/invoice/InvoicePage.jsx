@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Layout, LayoutBody } from '@/components/custom/Layout'
 import { DataTable } from '@/components/DataTable'
@@ -22,6 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DateRange } from '@/components/custom/DateRange'
+import BulkInvoiceFromSelectionDialog from './BulkInvoiceFromSelectionDialog'
 
 const InvoicePage = () => {
   const dispatch = useDispatch()
@@ -32,22 +34,25 @@ const InvoicePage = () => {
   const [showDeleteInvoiceDialog, setShowDeleteInvoiceDialog] = useState(false)
   const [showInvoiceDetailDialog, setShowInvoiceDetailDialog] = useState(false)
   const [itemChoice, setItemChoice] = useState({})
+  const [filters, setFilters] = useState({
+    status: '',
+    shippingStatus: '',
+    dateRange: null,
+  })
+  const [selected, setSelected] = useState(new Set())
+  const [openBulk, setOpenBulk] = useState(false)
 
   const handleDelete = async (id) => {
     try {
       await dispatch(deleteExistingInvoice(id)).unwrap()
-    } catch (error) {
-      console.error('Error deleting invoice:', error)
-    }
+    } catch {}
   }
 
   const handleShowDetail = async (id) => {
     try {
       await dispatch(getInvoiceDetails(id)).unwrap()
       setShowInvoiceDetailDialog(true)
-    } catch (error) {
-      console.error('Error fetching invoice detail:', error)
-    }
+    } catch {}
   }
 
   const handleStatusChange = async (id, status) => {
@@ -56,26 +61,27 @@ const InvoicePage = () => {
         changeInvoiceStatus({
           id,
           status,
+          filters,
         }),
       ).unwrap()
-    } catch (error) {
-      console.error('Error updating invoice status:', error)
-    }
+    } catch {}
   }
 
   useEffect(() => {
     document.title = 'Quản lý đơn hàng'
-    dispatch(getInvoice())
-  }, [dispatch])
+    if (filters.dateRange && filters.dateRange.from && filters.dateRange.to) {
+      dispatch(getInvoice(filters))
+    } else if (!filters.dateRange) {
+      dispatch(getInvoice(filters))
+    }
+  }, [dispatch, filters])
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND',
     }).format(amount || 0)
-  }
 
-  // Định nghĩa các trạng thái đơn hàng
   const statusOptions = [
     {
       value: 'draft',
@@ -99,14 +105,43 @@ const InvoicePage = () => {
     },
   ]
 
-  const getStatusInfo = (status) => {
-    return (
-      statusOptions.find((option) => option.value === status) ||
-      statusOptions[0]
-    )
+  const getStatusInfo = (status) =>
+    statusOptions.find((option) => option.value === status) || statusOptions[0]
+
+  const allChecked = useMemo(
+    () => invoices.length > 0 && selected.size === invoices.length,
+    [invoices, selected],
+  )
+
+  const toggleAll = () => {
+    if (allChecked) setSelected(new Set())
+    else setSelected(new Set(invoices.map((i) => String(i.id))))
+  }
+
+  const toggleOne = (id) => {
+    const sid = String(id)
+    const next = new Set(selected)
+    if (next.has(sid)) next.delete(sid)
+    else next.add(sid)
+    setSelected(next)
   }
 
   const columns = [
+    {
+      id: 'select',
+      header: (
+        <input type="checkbox" checked={allChecked} onChange={toggleAll} />
+      ),
+      cell: ({ row }) => (
+        <input
+          type="checkbox"
+          checked={selected.has(String(row.original.id))}
+          onChange={() => toggleOne(row.original.id)}
+        />
+      ),
+      enableSorting: false,
+      enableColumnFilter: false,
+    },
     {
       accessorKey: 'id',
       header: 'STT',
@@ -144,7 +179,6 @@ const InvoicePage = () => {
       cell: ({ row }) => {
         const status = row.getValue('status') || 'pending'
         const statusInfo = getStatusInfo(status)
-
         return (
           <Select
             value={status}
@@ -201,7 +235,6 @@ const InvoicePage = () => {
           >
             <Eye className="h-5 w-5" />
           </Button>
-
           <Button
             variant="outline"
             size="sm"
@@ -221,8 +254,47 @@ const InvoicePage = () => {
 
   const toolbar = [
     {
-      children: <Can permission={''}></Can>,
+      children: (
+        <div className="flex gap-2">
+          <Select
+            value={filters.status || '__none__'}
+            onValueChange={(val) =>
+              setFilters((f) => ({
+                ...f,
+                status: val === '__none__' ? '' : val,
+              }))
+            }
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Trạng thái đơn" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">Trạng thái đơn</SelectItem>
+              <SelectItem value="pending">Chờ xác nhận</SelectItem>
+              <SelectItem value="accepted">Đã xác nhận</SelectItem>
+              <SelectItem value="rejected">Đã từ chối</SelectItem>
+            </SelectContent>
+          </Select>
+          <DateRange
+            onChange={(range) =>
+              setFilters((f) => ({
+                ...f,
+                dateRange: range?.from && range?.to ? range : null,
+              }))
+            }
+          />
+          <Button
+            variant="outline"
+            onClick={() => setOpenBulk(true)}
+            disabled={selected.size === 0}
+            title="Tạo hóa đơn hàng loạt từ các đơn đã chọn"
+          >
+            Tạo hóa đơn hàng loạt ({selected.size})
+          </Button>
+        </div>
+      ),
     },
+    { children: <Can permission={''} /> },
   ]
 
   return (
@@ -243,15 +315,13 @@ const InvoicePage = () => {
             caption="Danh sách đơn hàng"
             searchKey="invoiceCode"
             searchPlaceholder="Tìm theo mã đơn hàng..."
-            showGlobalFilter={true}
-            showColumnFilters={true}
-            enableSorting={true}
+            showGlobalFilter
+            showColumnFilters
+            enableSorting
             loading={loading}
           />
         </div>
       </LayoutBody>
-
-      {/* Dialogs */}
       {showDeleteInvoiceDialog && (
         <ConfirmDialog
           open={showDeleteInvoiceDialog}
@@ -261,12 +331,25 @@ const InvoicePage = () => {
           loading={loading}
         />
       )}
-
       {showInvoiceDetailDialog && invoiceDetail && (
         <InvoiceDetailDialog
           open={showInvoiceDetailDialog}
           onOpenChange={setShowInvoiceDetailDialog}
           invoiceData={invoiceDetail}
+        />
+      )}
+      {openBulk && (
+        <BulkInvoiceFromSelectionDialog
+          open={openBulk}
+          onOpenChange={(v) => {
+            setOpenBulk(v)
+            if (!v) setSelected(new Set())
+          }}
+          orders={invoices.filter((i) => selected.has(String(i.id)))}
+          onCreated={() => {
+            setSelected(new Set())
+            dispatch(getInvoice(filters))
+          }}
         />
       )}
     </Layout>

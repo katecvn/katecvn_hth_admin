@@ -228,7 +228,8 @@ export const invoiceSlice = createSlice({
       })
       .addCase(deleteExistingInvoice.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || action.payload || 'Lỗi không xác định'
+        state.error =
+          action.payload?.message || action.payload || 'Lỗi không xác định'
         toast.error(state.error)
       })
       .addCase(changeInvoiceStatus.pending, (state) => {
