@@ -33,13 +33,16 @@ const UserReport = ({ fromDate, toDate }) => {
   useEffect(() => {
     const perms = JSON.parse(localStorage.getItem('permissionCodes')) || []
     const names = perms.map((p) => p.name)
+
     if (names.includes('purchase_order_view')) {
       const dateRange =
         fromDate && toDate ? { dateRange: { from: fromDate, to: toDate } } : {}
       dispatch(getPurchaseOrders({ ...dateRange, status: 'accepted' }))
     }
 
-    dispatch(getRewardPoints())
+    if (names.includes('reward_point_overview_view')) {
+      dispatch(getRewardPoints())
+    }
   }, [dispatch, fromDate, toDate])
 
   const actualTheme = useMemo(() => {
@@ -81,8 +84,9 @@ const UserReport = ({ fromDate, toDate }) => {
   const cntRejected = orders.filter((o) => o.status === 'rejected').length
 
   return (
-    <Can permission="purchase_order_view">
-      <div className="space-y-6">
+    <div className="space-y-6">
+      {/* Thống kê đơn mua */}
+      <Can permission="purchase_order_view">
         <h2 className={`mt-6 text-xl font-semibold ${textTitleClass}`}>
           Thống kê đơn mua
         </h2>
@@ -201,8 +205,10 @@ const UserReport = ({ fromDate, toDate }) => {
             </Link>
           </Card>
         </div>
+      </Can>
 
-        {/* Card điểm thưởng */}
+      {/* Điểm thưởng */}
+      <Can permission="reward_point_overview_view">
         <h2 className={`mt-6 text-xl font-semibold ${textTitleClass}`}>
           Điểm thưởng
         </h2>
@@ -225,8 +231,8 @@ const UserReport = ({ fromDate, toDate }) => {
             </CardContent>
           </Card>
         </div>
-      </div>
-    </Can>
+      </Can>
+    </div>
   )
 }
 

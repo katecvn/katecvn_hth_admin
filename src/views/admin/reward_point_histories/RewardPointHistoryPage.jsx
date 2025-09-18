@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Layout, LayoutBody } from '@/components/custom/Layout'
 import { DataTable } from '@/components/DataTable'
-import { getHistories } from '@/stores/RewardPointHistorySlice'
+import { getHistories, getMyHistories } from '@/stores/RewardPointHistorySlice'
 
 const RewardPointHistoryPage = () => {
   const dispatch = useDispatch()
@@ -10,7 +10,15 @@ const RewardPointHistoryPage = () => {
 
   useEffect(() => {
     document.title = 'Lịch sử điểm thưởng'
-    dispatch(getHistories({ page: 1, limit: 9999 }))
+
+    const perms = JSON.parse(localStorage.getItem('permissionCodes')) || []
+    const names = perms.map((p) => p.name)
+
+    if (names.includes('reward_point_history_list_view')) {
+      dispatch(getHistories({ page: 1, limit: 9999 }))
+    } else if (names.includes('reward_history_view')) {
+      dispatch(getMyHistories({ page: 1, limit: 9999 }))
+    }
   }, [dispatch])
 
   const columns = [
