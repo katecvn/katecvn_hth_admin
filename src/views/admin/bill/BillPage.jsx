@@ -23,6 +23,7 @@ import {
 } from '@/stores/BillSlice'
 import BillDetailDialog from './BillDetailDialog'
 import BillFormDialog from './BillFormDialog'
+import BulkInvoiceDialog from './BulkInvoiceDialog'
 
 const BillPage = () => {
   const dispatch = useDispatch()
@@ -37,9 +38,9 @@ const BillPage = () => {
     mode: 'create',
     data: null,
   })
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false)
   const [itemChoice, setItemChoice] = useState({})
-  const [keyword, setKeyword] = useState('')
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useState('all')
 
   const formatCurrency = (amount) =>
     new Intl.NumberFormat('vi-VN', {
@@ -60,13 +61,13 @@ const BillPage = () => {
   const fetchList = () => {
     const filters = {}
     if (status && status !== 'all') filters.status = status
-    if (keyword) filters.keyword = keyword
     dispatch(getBills(filters))
   }
 
   useEffect(() => {
     document.title = 'Quản lý hóa đơn'
     fetchList()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const getStatusClass = (s) => {
@@ -77,7 +78,7 @@ const BillPage = () => {
 
   const handleStatusChange = async (id, next) => {
     await dispatch(
-      changeBillStatus({ id, status: next, filters: { status, keyword } }),
+      changeBillStatus({ id, status: next, filters: { status } }),
     ).unwrap()
   }
 
@@ -227,13 +228,22 @@ const BillPage = () => {
             Lọc
           </Button>
           <Can permission={'invoice_create'}>
-            <Button
-              onClick={() =>
-                setFormDialog({ open: true, mode: 'create', data: null })
-              }
-            >
-              + Tạo hóa đơn
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() =>
+                  setFormDialog({ open: true, mode: 'create', data: null })
+                }
+              >
+                + Tạo hóa đơn
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setBulkDialogOpen(true)}
+                title="Tạo nhanh từ nhiều đơn hàng"
+              >
+                Tạo nhanh từ đơn
+              </Button>
+            </div>
           </Can>
         </div>
       ),
@@ -291,6 +301,14 @@ const BillPage = () => {
           onSaved={fetchList}
           mode={formDialog.mode}
           billData={formDialog.data}
+        />
+      )}
+
+      {bulkDialogOpen && (
+        <BulkInvoiceDialog
+          open={bulkDialogOpen}
+          onOpenChange={setBulkDialogOpen}
+          onCreated={fetchList}
         />
       )}
     </Layout>

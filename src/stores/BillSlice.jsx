@@ -10,7 +10,6 @@ const billApi = {
     if (filters?.keyword) params.keyword = filters.keyword
     if (filters?.page) params.page = filters.page
     if (filters?.limit) params.limit = filters.limit
-
     const res = await api.get('/invoice/shows', { params })
     const { data } = res.data
     return data || { invoices: [] }
@@ -36,9 +35,12 @@ const billApi = {
     const res = await api.delete(`/invoice/destroy/${id}`)
     return res.data
   },
+  bulkCreate: async (payload) => {
+    const res = await api.post('/invoice/bulk-create', payload)
+    return res.data
+  },
 }
 
-// ================= THUNKS =================
 export const getBills = createAsyncThunk(
   'bill/list',
   async (filters, { rejectWithValue }) => {
@@ -116,6 +118,19 @@ export const changeBillStatus = createAsyncThunk(
   },
 )
 
+export const bulkCreateBills = createAsyncThunk(
+  'bill/bulkCreate',
+  async (payload, { rejectWithValue, dispatch }) => {
+    try {
+      await billApi.bulkCreate(payload)
+      await dispatch(getBills()).unwrap()
+      toast.success('Tạo hóa đơn hàng loạt thành công')
+    } catch (error) {
+      return rejectWithValue(handleError(error))
+    }
+  },
+)
+
 const initialState = {
   bill: {},
   bills: [],
@@ -129,7 +144,6 @@ const billSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // list
       .addCase(getBills.pending, (state) => {
         state.loading = true
         state.error = null
@@ -143,7 +157,6 @@ const billSlice = createSlice({
         state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
-      // detail
       .addCase(getBillDetails.pending, (state) => {
         state.loading = true
         state.error = null
@@ -157,7 +170,6 @@ const billSlice = createSlice({
         state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
-      // create
       .addCase(createNewBill.pending, (state) => {
         state.loading = true
         state.error = null
@@ -170,7 +182,6 @@ const billSlice = createSlice({
         state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
-      // update
       .addCase(updateExistingBill.pending, (state) => {
         state.loading = true
         state.error = null
@@ -183,7 +194,6 @@ const billSlice = createSlice({
         state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
-      // delete
       .addCase(deleteExistingBill.pending, (state) => {
         state.loading = true
         state.error = null
@@ -197,7 +207,6 @@ const billSlice = createSlice({
           action.payload?.message || action.payload || 'Lỗi không xác định'
         toast.error(state.error)
       })
-      // change status
       .addCase(changeBillStatus.pending, (state) => {
         state.loading = true
         state.error = null
@@ -206,6 +215,18 @@ const billSlice = createSlice({
         state.loading = false
       })
       .addCase(changeBillStatus.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload?.message || 'Lỗi không xác định'
+        toast.error(state.error)
+      })
+      .addCase(bulkCreateBills.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(bulkCreateBills.fulfilled, (state) => {
+        state.loading = false
+      })
+      .addCase(bulkCreateBills.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
