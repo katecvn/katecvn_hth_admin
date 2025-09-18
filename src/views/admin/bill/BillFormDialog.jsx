@@ -1,15 +1,9 @@
+// BillFormDialog.jsx
 import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { toast } from 'sonner'
 import api from '@/utils/axios'
 import { createNewBill, updateExistingBill } from '@/stores/BillSlice'
 import {
@@ -19,7 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Eye, Calendar as CalendarIcon } from 'lucide-react'
+import {
+  Eye,
+  Calendar as CalendarIcon,
+  Search,
+  ChevronDown,
+  ChevronRight,
+} from 'lucide-react'
 import {
   Popover,
   PopoverContent,
@@ -27,8 +27,6 @@ import {
 } from '@/components/ui/popover'
 import { DatePicker } from '@/components/custom/DatePicker'
 import { formatDateVN, parseDateLocal } from '@/utils/parse-date'
-
-// form + schema
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -36,9 +34,13 @@ import {
   updateBillSchema,
   normalizeBillPayload,
 } from './SchemaBill'
-
-// UI detail dialog (tái dùng dialog đơn hàng hiện có)
 import InvoiceDetailDialog from '@/views/admin/invoice/InvoiceDetailDialog'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 
 const BillFormDialog = ({
   open,
@@ -53,6 +55,7 @@ const BillFormDialog = ({
   const [orders, setOrders] = useState([])
   const [orderInfo, setOrderInfo] = useState(null)
   const [showOrderDetail, setShowOrderDetail] = useState(false)
+  const [keyword, setKeyword] = useState('')
 
   const {
     register,
@@ -72,6 +75,11 @@ const BillFormDialog = ({
       dueDate: '',
       taxRate: '0',
       note: '',
+      customerCompany: '',
+      customerTaxCode: '',
+      customerAddress: '',
+      customerPhone: '',
+      customerEmail: '',
     },
   })
 
@@ -80,7 +88,6 @@ const BillFormDialog = ({
   const dueDate = watch('dueDate')
   const taxRate = watch('taxRate')
 
-  // tính toán totals
   const totals = useMemo(() => {
     const subTotal = Number(orderInfo?.subTotal ?? orderInfo?.totalAmount ?? 0)
     const discountAmount = Number(orderInfo?.discountAmount ?? 0)
@@ -114,31 +121,39 @@ const BillFormDialog = ({
   }
 
   useEffect(() => {
-    if (open) {
-      fetchOrders()
-      if (mode === 'edit' && billData) {
-        reset({
-          orderId: String(billData.orderId),
-          invoiceNumber: billData.invoiceNumber || '',
-          issueDate: billData.issueDate ? billData.issueDate.slice(0, 10) : '',
-          dueDate: billData.dueDate ? billData.dueDate.slice(0, 10) : '',
-          taxRate: billData.taxRate?.toString() || '0',
-          note: billData.note || '',
-        })
-        setOrderInfo(billData.order || null)
-      } else {
-        reset({
-          orderId: '',
-          invoiceNumber: '',
-          issueDate: '',
-          dueDate: '',
-          taxRate: '0',
-          note: '',
-        })
-        setOrderInfo(null)
-      }
+    if (!open) return
+    fetchOrders()
+    if (mode === 'edit' && billData) {
+      reset({
+        orderId: String(billData.orderId),
+        invoiceNumber: billData.invoiceNumber || '',
+        issueDate: billData.issueDate ? billData.issueDate.slice(0, 10) : '',
+        dueDate: billData.dueDate ? billData.dueDate.slice(0, 10) : '',
+        taxRate: billData.taxRate?.toString() || '0',
+        note: billData.note || '',
+        customerCompany: billData.customerCompany || '',
+        customerTaxCode: billData.customerTaxCode || '',
+        customerAddress: billData.customerAddress || '',
+        customerPhone: billData.customerPhone || '',
+        customerEmail: billData.customerEmail || '',
+      })
+      setOrderInfo(billData.order || null)
+    } else {
+      reset({
+        orderId: '',
+        invoiceNumber: '',
+        issueDate: '',
+        dueDate: '',
+        taxRate: '0',
+        note: '',
+        customerCompany: '',
+        customerTaxCode: '',
+        customerAddress: '',
+        customerPhone: '',
+        customerEmail: '',
+      })
+      setOrderInfo(null)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   useEffect(() => {
@@ -146,11 +161,6 @@ const BillFormDialog = ({
   }, [orderId, mode])
 
   const onSubmit = async (formValues) => {
-    if (!formValues.orderId) {
-      toast.error('Vui lòng chọn đơn hàng')
-      return
-    }
-
     const payload = normalizeBillPayload({
       ...formValues,
       subTotal: totals.subTotal,
@@ -158,7 +168,6 @@ const BillFormDialog = ({
       taxAmount: totals.taxAmount,
       totalAmount: totals.totalAmount,
     })
-
     if (mode === 'edit' && billData) {
       await dispatch(
         updateExistingBill({ id: billData.id, data: payload }),
@@ -166,14 +175,12 @@ const BillFormDialog = ({
     } else {
       await dispatch(createNewBill(payload)).unwrap()
     }
-
     onSaved && onSaved()
     onOpenChange(false)
   }
 
   const DateField = ({ name, label, value, onChange }) => {
     const selectedDate = value ? parseDateLocal(value) : null
-
     return (
       <div className="space-y-1">
         <label className="text-sm font-medium">{label}</label>
@@ -184,9 +191,7 @@ const BillFormDialog = ({
                 readOnly
                 value={value ? formatDateVN(value) : ''}
                 placeholder="Chọn ngày"
-                className={`cursor-pointer pr-10 text-left ${
-                  !value ? 'text-muted-foreground' : ''
-                }`}
+                className={`cursor-pointer pr-10 text-left ${!value ? 'text-muted-foreground' : ''}`}
               />
               <CalendarIcon
                 size={18}
@@ -204,10 +209,10 @@ const BillFormDialog = ({
                   onChange('')
                   return
                 }
-                const year = date.getFullYear()
-                const month = String(date.getMonth() + 1).padStart(2, '0')
-                const day = String(date.getDate()).padStart(2, '0')
-                onChange(`${year}-${month}-${day}`)
+                const y = date.getFullYear()
+                const m = String(date.getMonth() + 1).padStart(2, '0')
+                const d = String(date.getDate()).padStart(2, '0')
+                onChange(`${y}-${m}-${d}`)
               }}
               fromYear={2000}
               toYear={new Date().getFullYear() + 1}
@@ -223,20 +228,19 @@ const BillFormDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-hidden sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="p-0 sm:max-w-3xl">
+        <div className="sticky top-0 z-10 border-b bg-background px-6 py-4">
+          <h2 className="text-lg font-semibold">
             {mode === 'edit' ? 'Cập nhật hóa đơn' : 'Tạo hóa đơn từ đơn hàng'}
-          </DialogTitle>
-        </DialogHeader>
+          </h2>
+        </div>
 
-        <div className="h-full overflow-auto">
+        <div className="max-h-[70vh] overflow-auto px-6 py-5">
           <form
             id="bill-form"
-            className="space-y-6 p-1"
+            className="space-y-6"
             onSubmit={handleSubmit(onSubmit)}
           >
-            {/* chọn đơn hàng */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Chọn đơn hàng</label>
               <div className="flex flex-wrap items-center gap-2">
@@ -261,15 +265,27 @@ const BillFormDialog = ({
 
                 {mode === 'create' && (
                   <>
-                    <Input
-                      placeholder="Tìm đơn hàng..."
-                      className="w-56"
-                      onKeyDown={async (e) => {
-                        if (e.key === 'Enter') {
-                          await fetchOrders(e.currentTarget.value)
-                        }
-                      }}
-                    />
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Tìm đơn hàng..."
+                        className="w-56"
+                        value={keyword}
+                        onChange={(e) => setKeyword(e.target.value)}
+                        onKeyDown={async (e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            await fetchOrders(keyword)
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fetchOrders(keyword)}
+                      >
+                        <Search size={16} />
+                      </Button>
+                    </div>
                     <Button
                       type="button"
                       variant="outline"
@@ -297,14 +313,18 @@ const BillFormDialog = ({
               )}
             </div>
 
-            {/* thông tin hóa đơn */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-1">
                 <label className="text-sm font-medium">Số hóa đơn</label>
                 <Input
-                  placeholder="Tự nhập (tuỳ chọn)"
+                  placeholder="Nhập số hóa đơn"
                   {...register('invoiceNumber')}
                 />
+                {errors?.invoiceNumber?.message && (
+                  <p className="text-xs text-red-500">
+                    {errors.invoiceNumber.message}
+                  </p>
+                )}
               </div>
 
               <DateField
@@ -336,15 +356,80 @@ const BillFormDialog = ({
                     setValue('taxRate', cleaned, { shouldValidate: true })
                   }}
                 />
+                {errors?.taxRate?.message && (
+                  <p className="text-xs text-red-500">
+                    {errors.taxRate.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1 md:col-span-2">
                 <label className="text-sm font-medium">Ghi chú</label>
                 <Input placeholder="Ghi chú..." {...register('note')} />
+                {errors?.note?.message && (
+                  <p className="text-xs text-red-500">{errors.note.message}</p>
+                )}
               </div>
             </div>
 
-            {/* tổng tiền */}
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="vat">
+                <AccordionTrigger className="text-sm">
+                  <div className="flex items-center gap-2">
+                    <ChevronRight className="h-4 w-4 data-[state=open]:hidden" />
+                    <ChevronDown className="hidden h-4 w-4 data-[state=open]:block" />
+                    Thông tin xuất hoá đơn
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium">
+                        Đơn vị/Doanh nghiệp
+                      </label>
+                      <Input
+                        {...register('customerCompany')}
+                        placeholder="Tên đơn vị"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium">Mã số thuế</label>
+                      <Input
+                        {...register('customerTaxCode')}
+                        placeholder="Mã số thuế"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium">
+                        Số điện thoại
+                      </label>
+                      <Input
+                        {...register('customerPhone')}
+                        placeholder="Số điện thoại"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium">Email</label>
+                      <Input
+                        type="email"
+                        {...register('customerEmail')}
+                        placeholder="Email"
+                      />
+                    </div>
+                    <div className="space-y-1 md:col-span-2">
+                      <label className="text-sm font-medium">
+                        Địa chỉ đơn vị
+                      </label>
+                      <Input
+                        {...register('customerAddress')}
+                        placeholder="Địa chỉ"
+                      />
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
             <div className="rounded border p-3">
               <div className="flex flex-col gap-2 text-sm">
                 <div className="flex justify-between">
@@ -368,7 +453,7 @@ const BillFormDialog = ({
           </form>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="sticky z-10 border-t bg-background px-6 py-4">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}

@@ -222,13 +222,15 @@ const UserReport = ({ fromDate, toDate }) => {
                 <IconInvoice className={`h-4 w-4 ${themeColors[5]?.text}`} />
               </div>
             </CardHeader>
-            <CardContent>
-              {loadingUser ? (
-                <Skeleton className="h-[20px] w-full rounded-md" />
-              ) : (
-                <div className="text-2xl font-bold">{rewardPoints}</div>
-              )}
-            </CardContent>
+            <Link to="/reward-point-histories">
+              <CardContent>
+                {loadingUser ? (
+                  <Skeleton className="h-[20px] w-full rounded-md" />
+                ) : (
+                  <div className="text-2xl font-bold">{rewardPoints}</div>
+                )}
+              </CardContent>
+            </Link>
           </Card>
         </div>
       </Can>

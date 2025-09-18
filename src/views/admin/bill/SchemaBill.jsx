@@ -1,14 +1,13 @@
+// SchemaBill.js
 import { z } from 'zod'
 
-// validate ngày YYYY-MM-DD
 const validateDateStr = (val) => {
-  if (!val) return true // optional
+  if (!val) return true
   if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return false
   const d = new Date(val)
   return !isNaN(d.getTime())
 }
 
-// validate số thuế (0-100)
 const validateTax = (val) => {
   if (val === '' || val === undefined || val === null) return true
   const num = Number(val)
@@ -17,13 +16,13 @@ const validateTax = (val) => {
 
 const baseSchema = {
   orderId: z.string().min(1, { message: 'Vui lòng chọn đơn hàng' }),
-  invoiceNumber: z.string().optional(),
+  invoiceNumber: z.string().min(1, { message: 'Vui lòng nhập số hóa đơn' }),
   issueDate: z
     .string()
+    .min(1, { message: 'Vui lòng chọn ngày phát hành' })
     .refine(validateDateStr, {
       message: 'Ngày phát hành không hợp lệ (YYYY-MM-DD)',
-    })
-    .optional(),
+    }),
   dueDate: z
     .string()
     .refine(validateDateStr, {
@@ -32,31 +31,32 @@ const baseSchema = {
     .optional(),
   taxRate: z
     .string()
-    .refine(validateTax, {
-      message: 'Thuế phải là số từ 0 đến 100',
-    })
+    .refine(validateTax, { message: 'Thuế phải là số từ 0 đến 100' })
     .optional(),
   note: z.string().max(255, { message: 'Ghi chú tối đa 255 ký tự' }).optional(),
+  customerCompany: z.string().optional(),
+  customerTaxCode: z.string().optional(),
+  customerAddress: z.string().optional(),
 }
 
-// tạo
 export const createBillSchema = z.object(baseSchema)
 
-// update (giữ như tạo nhưng có id)
 export const updateBillSchema = z.object({
   ...baseSchema,
   id: z.number().optional(),
 })
 
-// Chuẩn hóa payload trước khi gửi BE
 export const normalizeBillPayload = (data) => {
   return {
     orderId: Number(data.orderId),
-    invoiceNumber: data.invoiceNumber || undefined,
-    issueDate: data.issueDate || undefined,
+    invoiceNumber: data.invoiceNumber,
+    issueDate: data.issueDate,
     dueDate: data.dueDate || undefined,
     taxRate: Number(data.taxRate || 0),
     note: data.note || undefined,
+    customerCompany: data.customerCompany || undefined,
+    customerTaxCode: data.customerTaxCode || undefined,
+    customerAddress: data.customerAddress || undefined,
     subTotal: data.subTotal,
     discountAmount: data.discountAmount,
     taxAmount: data.taxAmount,
