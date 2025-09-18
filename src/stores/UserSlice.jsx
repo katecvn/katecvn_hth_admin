@@ -4,6 +4,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { toast } from 'sonner'
 import { getAuthUserRolePermissions } from './AuthSlice'
 
+// Lấy danh sách user
 export const getUsers = createAsyncThunk(
   'user/getUsers',
   async (params, { rejectWithValue }) => {
@@ -12,65 +13,58 @@ export const getUsers = createAsyncThunk(
       const { data } = response.data
       return { users: data.users, params }
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(message)
+      return rejectWithValue(handleError(error))
     }
   },
 )
 
+// Xóa user
 export const deleteUser = createAsyncThunk(
   'user/delete',
-  async (data, { rejectWithValue, dispatch, getState }) => {
+  async (id, { rejectWithValue, dispatch, getState }) => {
     try {
-      await api.delete(`/user/destroy/${data}`)
-
-      // Get current params from state and use them for reloading
+      await api.delete(`/user/destroy/${id}`)
       const currentParams = getState().user.currentParams || { type: 'admin' }
       await dispatch(getUsers(currentParams)).unwrap()
-
       toast.success('Xóa thành công')
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(message)
+      return rejectWithValue(handleError(error))
     }
   },
 )
 
+// Tạo user
 export const createUser = createAsyncThunk(
   'user/create',
   async (data, { rejectWithValue, dispatch, getState }) => {
     try {
       await api.post('/user/create', data)
-
-      // Get current params from state and use them for reloading
       const currentParams = getState().user.currentParams || { type: 'admin' }
       await dispatch(getUsers(currentParams)).unwrap()
-
       toast.success('Thêm mới thành công')
     } catch (error) {
-      return rejectWithValue(error)
+      return rejectWithValue(handleError(error))
     }
   },
 )
 
+// Cập nhật user
 export const updateUser = createAsyncThunk(
   'user/update',
   async (updateData, { rejectWithValue, dispatch, getState }) => {
     try {
       const { id, data } = updateData
       await api.put(`/user/update/${id}`, data)
-
-      // Get current params from state and use them for reloading
       const currentParams = getState().user.currentParams || { type: 'admin' }
       await dispatch(getUsers(currentParams)).unwrap()
-
       toast.success('Cập nhật dữ liệu thành công')
     } catch (error) {
-      return rejectWithValue(error)
+      return rejectWithValue(handleError(error))
     }
   },
 )
 
+// Đổi mật khẩu
 export const changePassword = createAsyncThunk(
   'user/change-password',
   async (data, { rejectWithValue }) => {
@@ -78,12 +72,12 @@ export const changePassword = createAsyncThunk(
       await api.put('/user/change-password', data)
       toast.success('Cập nhật mật khẩu thành công')
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(message)
+      return rejectWithValue(handleError(error))
     }
   },
 )
 
+// Update profile
 export const updateProfile = createAsyncThunk(
   'user/update-profile',
   async (data, { rejectWithValue, dispatch }) => {
@@ -92,17 +86,30 @@ export const updateProfile = createAsyncThunk(
       await dispatch(getAuthUserRolePermissions()).unwrap()
       toast.success('Cập nhật thông tin thành công')
     } catch (error) {
-      const message = handleError(error)
-      return rejectWithValue(message)
+      return rejectWithValue(handleError(error))
+    }
+  },
+)
+
+// ⭐ Lấy điểm thưởng user
+export const getRewardPoints = createAsyncThunk(
+  'user/getRewardPoints',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/user/reward-points')
+      return response.data.data // { rewardPoints: ... }
+    } catch (error) {
+      return rejectWithValue(handleError(error))
     }
   },
 )
 
 const initialState = {
   users: [],
+  rewardPoints: 0,
   loading: false,
   error: null,
-  currentParams: null, // Track the current params
+  currentParams: null,
 }
 
 export const userSlice = createSlice({
@@ -111,6 +118,7 @@ export const userSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      // getUsers
       .addCase(getUsers.pending, (state) => {
         state.loading = true
         state.error = null
@@ -118,13 +126,15 @@ export const userSlice = createSlice({
       .addCase(getUsers.fulfilled, (state, action) => {
         state.loading = false
         state.users = action.payload.users
-        state.currentParams = action.payload.params // Store the params
+        state.currentParams = action.payload.params
       })
       .addCase(getUsers.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload.message || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
+
+      // createUser
       .addCase(createUser.pending, (state) => {
         state.loading = true
         state.error = null
@@ -134,9 +144,11 @@ export const userSlice = createSlice({
       })
       .addCase(createUser.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload.message || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
+
+      // updateUser
       .addCase(updateUser.pending, (state) => {
         state.loading = true
         state.error = null
@@ -146,22 +158,26 @@ export const userSlice = createSlice({
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload.message || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
+      })
+
+      // deleteUser
+      .addCase(deleteUser.pending, (state) => {
+        state.loading = true
+        state.error = null
       })
       .addCase(deleteUser.fulfilled, (state) => {
         state.loading = false
       })
       .addCase(deleteUser.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload.message || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
-      .addCase(deleteUser.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(updateProfile.pending, (state) => {
+
+      // changePassword
+      .addCase(changePassword.pending, (state) => {
         state.loading = true
         state.error = null
       })
@@ -170,10 +186,12 @@ export const userSlice = createSlice({
       })
       .addCase(changePassword.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload.message || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
-      .addCase(changePassword.pending, (state) => {
+
+      // updateProfile
+      .addCase(updateProfile.pending, (state) => {
         state.loading = true
         state.error = null
       })
@@ -182,7 +200,22 @@ export const userSlice = createSlice({
       })
       .addCase(updateProfile.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload.message || 'Lỗi không xác định'
+        state.error = action.payload?.message || 'Lỗi không xác định'
+        toast.error(state.error)
+      })
+
+      // getRewardPoints
+      .addCase(getRewardPoints.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(getRewardPoints.fulfilled, (state, action) => {
+        state.loading = false
+        state.rewardPoints = action.payload.rewardPoints
+      })
+      .addCase(getRewardPoints.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload?.message || 'Lỗi không xác định'
         toast.error(state.error)
       })
   },

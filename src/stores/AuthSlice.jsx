@@ -2,13 +2,13 @@ import api from '@/utils/axios'
 import { handleError } from '@/utils/handle-error'
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { toast } from 'sonner'
-
-// ---- Thunks ----
+import { useNavigate } from 'react-router-dom'
 
 export const login = createAsyncThunk(
-  'auth/login',
+  'login',
   async (data, { rejectWithValue }) => {
     try {
+      // const navigate = useNavigate()
       const response = await api.post('/login', data)
       const { data: token } = response.data
       localStorage.setItem('accessToken', token.token)
@@ -20,31 +20,35 @@ export const login = createAsyncThunk(
         'userCurrent',
         JSON.stringify(token?.userInformation),
       )
+
       toast.success('Đăng nhập thành công')
       return response.data
     } catch (error) {
+      console.log(error, 'err')
+
       toast.error('Tài khoản hoặc mật khẩu không đúng')
-      return rejectWithValue(handleError(error))
     }
   },
 )
 
 export const logout = createAsyncThunk(
-  'auth/logout',
+  'logout',
   async (data, { rejectWithValue }) => {
     try {
+      // call api logout
       // await api.get('/logout', data)
       localStorage.removeItem('accessToken')
       localStorage.removeItem('permissionCodes')
       toast.success('Đăng xuất thành công')
     } catch (error) {
-      return rejectWithValue(handleError(error))
+      const message = handleError(error)
+      return rejectWithValue(message)
     }
   },
 )
 
 export const getAuthUserRolePermissions = createAsyncThunk(
-  'auth/authenticated',
+  '/auth/authenticated',
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.post('/authenticated')
@@ -52,26 +56,15 @@ export const getAuthUserRolePermissions = createAsyncThunk(
       const permissions = user?.role?.permissions.map(
         (permission) => permission.code,
       )
+
       localStorage.setItem(
         'permissionCodes',
         JSON.stringify(permissions) || '[]',
       )
       return user
     } catch (error) {
-      return rejectWithValue(handleError(error))
-    }
-  },
-)
-
-// ⭐ Lấy điểm thưởng user
-export const getRewardPoints = createAsyncThunk(
-  'auth/get-reward-points',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await api.get('/user/reward-points')
-      return response.data.data // { rewardPoints: ... }
-    } catch (error) {
-      return rejectWithValue(handleError(error))
+      const message = handleError(error)
+      return rejectWithValue(message)
     }
   },
 )
@@ -84,7 +77,8 @@ export const redirectToGoogle = createAsyncThunk(
       const { data } = response.data
       window.location.href = data
     } catch (error) {
-      return rejectWithValue(handleError(error))
+      const message = handleError(error)
+      return rejectWithValue(message)
     }
   },
 )
@@ -93,13 +87,16 @@ export const callbackGoogle = createAsyncThunk(
   'auth/callback-google',
   async (data, { rejectWithValue }) => {
     try {
-      const response = await api.get('/auth/callback/google', { params: data })
+      const response = await api.get('/auth/callback/google', {
+        params: data,
+      })
       const { data: token } = response.data
       localStorage.setItem('accessToken', token)
       toast.success('Đăng nhập thành công')
       return response.data
     } catch (error) {
-      return rejectWithValue(handleError(error))
+      const message = handleError(error)
+      return rejectWithValue(message)
     }
   },
 )
@@ -111,11 +108,11 @@ export const getAccessLogs = createAsyncThunk(
       const response = await api.get('/auth/access-log')
       return response.data
     } catch (error) {
-      return rejectWithValue(handleError(error))
+      const message = handleError(error)
+      return rejectWithValue(message)
     }
   },
 )
-
 export const forgotPass = createAsyncThunk(
   'auth/forgotPass',
   async (data, { rejectWithValue }) => {
@@ -123,11 +120,11 @@ export const forgotPass = createAsyncThunk(
       const response = await api.post('/forgot-password', data)
       return response.data
     } catch (error) {
-      return rejectWithValue(handleError(error))
+      const message = handleError(error)
+      return rejectWithValue(message)
     }
   },
 )
-
 export const resetPass = createAsyncThunk(
   'auth/resetPass',
   async (data, { rejectWithValue }) => {
@@ -135,6 +132,7 @@ export const resetPass = createAsyncThunk(
       const response = await api.post('/reset-password', data)
       return response.data
     } catch (error) {
+      // const message = handleError(error)
       return rejectWithValue(error)
     }
   },
@@ -148,28 +146,25 @@ export const revokeTokens = createAsyncThunk(
       await dispatch(getAccessLogs()).unwrap()
       toast.success('Đăng xuất thành công')
     } catch (error) {
-      return rejectWithValue(handleError(error))
+      const message = handleError(error)
+      return rejectWithValue(message)
     }
   },
 )
 
-// ---- Initial State ----
 const initialState = {
   authUserWithRoleHasPermissions: null,
-  rewardPoints: 0, // ⭐ thêm
   error: null,
   loading: false,
   accessLogs: [],
 }
 
-// ---- Slice ----
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // login
       .addCase(login.pending, (state) => {
         state.loading = true
         state.error = null
@@ -179,10 +174,9 @@ export const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
+        state.error = action.payload.message || 'Lỗi không xác định'
+        toast.error(state.error)
       })
-
-      // authenticated user
       .addCase(getAuthUserRolePermissions.pending, (state) => {
         state.loading = true
         state.error = null
@@ -193,25 +187,9 @@ export const authSlice = createSlice({
       })
       .addCase(getAuthUserRolePermissions.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
+        state.error = action.payload.message || 'Lỗi không xác định'
+        toast.error(state.error)
       })
-
-      // reward points
-      .addCase(getRewardPoints.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(getRewardPoints.fulfilled, (state, action) => {
-        state.loading = false
-        console.log('response', action.payloads)
-        state.rewardPoints = action.payload.rewardPoints
-      })
-      .addCase(getRewardPoints.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
-      })
-
-      // logout
       .addCase(logout.pending, (state) => {
         state.loading = true
         state.error = null
@@ -221,10 +199,9 @@ export const authSlice = createSlice({
       })
       .addCase(logout.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
+        state.error = action.payload.message || 'Lỗi không xác định'
+        toast.error(state.error)
       })
-
-      // forgot password
       .addCase(forgotPass.pending, (state) => {
         state.loading = true
         state.error = null
@@ -234,10 +211,9 @@ export const authSlice = createSlice({
       })
       .addCase(forgotPass.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
+        state.error = action.payload.message || 'Lỗi không xác định'
+        toast.error(state.error)
       })
-
-      // reset password
       .addCase(resetPass.pending, (state) => {
         state.loading = true
         state.error = null
@@ -247,10 +223,9 @@ export const authSlice = createSlice({
       })
       .addCase(resetPass.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
+        state.error = action.payload.message || 'Lỗi không xác định'
+        toast.error(state.error)
       })
-
-      // google redirect
       .addCase(redirectToGoogle.pending, (state) => {
         state.loading = true
         state.error = null
@@ -260,10 +235,9 @@ export const authSlice = createSlice({
       })
       .addCase(redirectToGoogle.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
+        state.error = action.payload.message || 'Lỗi không xác định'
+        toast.error(state.error)
       })
-
-      // google callback
       .addCase(callbackGoogle.pending, (state) => {
         state.loading = true
         state.error = null
@@ -273,10 +247,9 @@ export const authSlice = createSlice({
       })
       .addCase(callbackGoogle.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
+        state.error = action.payload.message || 'Lỗi không xác định'
+        toast.error(state.error)
       })
-
-      // access logs
       .addCase(getAccessLogs.pending, (state) => {
         state.loading = true
         state.error = null
@@ -287,10 +260,9 @@ export const authSlice = createSlice({
       })
       .addCase(getAccessLogs.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
+        state.error = action.payload.message || 'Lỗi không xác định'
+        toast.error(state.error)
       })
-
-      // revoke tokens
       .addCase(revokeTokens.pending, (state) => {
         state.loading = true
         state.error = null
@@ -300,7 +272,8 @@ export const authSlice = createSlice({
       })
       .addCase(revokeTokens.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload?.message || 'Lỗi không xác định'
+        state.error = action.payload.message || 'Lỗi không xác định'
+        toast.error(state.error)
       })
   },
 })

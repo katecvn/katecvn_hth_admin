@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getPurchaseOrders } from '@/stores/PurchaseOrderSlice'
-import { getRewardPoints } from '@/stores/authSlice'
+import { getRewardPoints } from '@/stores/UserSlice'
 import { useTheme } from '@/components/ThemeProvider'
 import Can from '@/utils/can'
 
@@ -14,8 +14,8 @@ const UserReport = ({ fromDate, toDate }) => {
   const orders = useSelector((s) => s.purchaseOrder.orders) || []
   const loadingOrders = useSelector((s) => s.purchaseOrder.loading)
 
-  const rewardPoints = useSelector((s) => s.auth.rewardPoints)
-  const loadingAuth = useSelector((s) => s.auth.loading)
+  const rewardPoints = useSelector((s) => s.user.rewardPoints)
+  const loadingUser = useSelector((s) => s.user.loading)
 
   const { theme } = useTheme()
   const [systemPrefersDark, setSystemPrefersDark] = useState(
@@ -39,7 +39,6 @@ const UserReport = ({ fromDate, toDate }) => {
       dispatch(getPurchaseOrders({ ...dateRange, status: 'accepted' }))
     }
 
-    // gọi API lấy điểm thưởng
     dispatch(getRewardPoints())
   }, [dispatch, fromDate, toDate])
 
@@ -203,7 +202,7 @@ const UserReport = ({ fromDate, toDate }) => {
           </Card>
         </div>
 
-        {/* Card điểm thưởng dời xuống dưới */}
+        {/* Card điểm thưởng */}
         <h2 className={`mt-6 text-xl font-semibold ${textTitleClass}`}>
           Điểm thưởng
         </h2>
@@ -218,7 +217,7 @@ const UserReport = ({ fromDate, toDate }) => {
               </div>
             </CardHeader>
             <CardContent>
-              {loadingAuth ? (
+              {loadingUser ? (
                 <Skeleton className="h-[20px] w-full rounded-md" />
               ) : (
                 <div className="text-2xl font-bold">{rewardPoints}</div>
